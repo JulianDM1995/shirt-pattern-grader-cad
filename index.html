@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TELA Patrón CAD - Graduador de Talla 10</title>
+    <!-- Technical Monospace & UI Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Technical CAD & Illustrator Style System */
+        :root {
+            --bg-base: #141416;       /* Solid charcoal canvas background */
+            --bg-surface: #1e1e20;    /* Solid property panel sidebar */
+            --bg-surface-opaque: #1a1a1c;
+            --bg-card: #252529;       /* Compact property panels */
+            --border-light: #2d2d30;   /* Thin VSCode-like borders */
+            
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --text-muted: #52525b;
+            
+            --brand-primary: #007acc;  /* Illustrator / CAD selection blue */
+            --brand-accent: #00f0ff;   /* Sharp Cyan for Delantero */
+            --brand-secondary: #ff00ff; /* Sharp Magenta for Espalda */
+            --brand-success: #10b981;
+            
+            /* SVG Grid Tokens */
+            --grid-major: rgba(255, 255, 255, 0.06);
+            --grid-minor: rgba(255, 255, 255, 0.02);
+            --axis-color: rgba(255, 255, 255, 0.05);
+
+            /* Sizing colors for grading */
+            --color-6: #ef4444;
+            --color-8: #f97316;
+            --color-10: #00f0ff;
+            --color-12: #10b981;
+            --color-14: #8b5cf6;
+            --color-16: #a855f7;
+            --color-18: #f43f5e;
+            
+            --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: 'Space Grotesk', 'Fira Code', Courier, monospace;
+            
+            --sidebar-width: 360px; /* More compact sidebar for CAD */
+        }
+
+        /* Day Mode (Light Theme overrides) */
+        body.light-mode {
+            --bg-base: #f4f4f5;         /* Crisp white artboard canvas */
+            --bg-surface: #ffffff;      /* Solid white properties panel */
+            --bg-surface-opaque: #fafafa;
+            --bg-card: #eaeaea;         /* Compact panels */
+            --border-light: #d4d4d8;    /* Zinc-300 clean dividers */
+            
+            --text-primary: #18181b;    /* Charcoal dark texts */
+            --text-secondary: #52525b;  /* Zinc-600 secondary texts */
+            --text-muted: #8e8e93;
+            
+            --brand-primary: #005fa3;   /* High-contrast blue */
+            --brand-accent: #0099a6;    /* Darker cyan for light mode readability */
+            --brand-secondary: #cc00cc; /* Darker magenta */
+            
+            --grid-major: rgba(0, 0, 0, 0.08);
+            --grid-minor: rgba(0, 0, 0, 0.03);
+            --axis-color: rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-ui);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+        }
+
+        /* Solid Sidebar Panel */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            z-index: 10;
+        }
+
+        /* Compact Tech Header */
+        .brand-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .brand-logo {
+            width: 28px;
+            height: 28px;
+            background: var(--brand-primary);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .brand-logo svg {
+            width: 16px;
+            height: 16px;
+            fill: #fff;
+        }
+
+        .brand-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .brand-badge {
+            background: rgba(0, 122, 204, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(0, 122, 204, 0.3);
+            font-size: 0.6rem;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: 700;
+        }
+
+        /* Sidebar Content */
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+        }
+
+        /* Property Panels */
+        .section-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 3px solid var(--brand-primary);
+            padding-left: 8px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .section-title span.count {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+        }
+
+        /* Inputs Form Layout */
+        .inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .input-group label span.formula {
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            font-size: 0.65rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            background: #121214;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            padding: 6px 28px 6px 8px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            transition: all 0.15s;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+            background: #1a1a1c;
+        }
+
+        .input-wrapper span.unit {
+            position: absolute;
+            right: 8px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            pointer-events: none;
+        }
+
+        /* Size Selector Grid */
+        .size-selector {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            background: #121214;
+            padding: 3px;
+            border-radius: 4px;
+            border: 1px solid var(--border-light);
+        }
+
+        .size-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 8px 0;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+        }
+
+        .size-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .size-btn.active {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        /* High-contrast active size markers */
+        .size-btn.active.size-6 { background: var(--color-6); }
+        .size-btn.active.size-8 { background: var(--color-8); }
+        .size-btn.active.size-10 { background: var(--color-10); color: #000; }
+        .size-btn.active.size-12 { background: var(--color-12); }
+        .size-btn.active.size-14 { background: var(--color-14); }
+        .size-btn.active.size-16 { background: var(--color-16); }
+        .size-btn.active.size-18 { background: var(--color-18); }
+
+        /* Toggles Styling */
+        .toggle-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .toggle-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 20px;
+            border: 1px solid var(--border-light);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 12px;
+            width: 12px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--text-secondary);
+            transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--brand-primary);
+            border-color: rgba(0, 122, 204, 0.3);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(16px);
+            background-color: #fff;
+        }
+
+        /* Buttons styles */
+        .action-btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-ui);
+        }
+
+        .btn-primary {
+            background: var(--brand-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #0088e6;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-light);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--text-secondary);
+        }
+
+        .reset-btn {
+            background: transparent;
+            border: none;
+            color: var(--brand-primary);
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* MAIN RENDER CANVAS */
+        .canvas-container {
+            flex: 1;
+            height: 100vh;
+            position: relative;
+            background-color: var(--bg-base); /* Clean flat vector CAD background adaptative */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .canvas-container:active {
+            cursor: grabbing;
+        }
+
+        svg#pattern-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Floating Top Toolbar */
+        .toolbar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            z-index: 5;
+        }
+
+        .toolbar-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--border-light);
+        }
+
+        .tool-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .tool-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .tool-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        /* View tabs in toolbar */
+        .view-mode-tabs {
+            display: flex;
+            background: #121214;
+            padding: 2px;
+            border-radius: 4px;
+            border: 1px solid var(--border-light);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+        }
+
+        /* Floating Legend for Nested Sizes */
+        .legend-card {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 160px;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .legend-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .legend-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .legend-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        /* SPREADSHEET TABLE MODE PANEL */
+        .table-overlay-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #121214;
+            z-index: 20;
+            display: none;
+            flex-direction: column;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .table-overlay-panel.visible {
+            display: flex;
+        }
+
+        .table-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .table-title-group h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .table-title-group p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Technical spreadsheet table */
+        .grading-table-container {
+            width: 100%;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            overflow: hidden;
+            background: var(--bg-surface);
+        }
+
+        .grading-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--font-ui);
+            text-align: left;
+        }
+
+        .grading-table th, .grading-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .grading-table th {
+            background: rgba(255, 255, 255, 0.01);
+            color: var(--text-secondary);
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .grading-table tr:hover td {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .grading-table td.var-code {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: #38bdf8;
+            font-size: 0.85rem;
+        }
+
+        .grading-table td.var-desc {
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .grading-table td.size-val {
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .grading-table td.size-val.base-10 {
+            color: #00f0ff;
+            font-weight: 700;
+            background: rgba(0, 240, 255, 0.03);
+        }
+
+        /* Seamless CAD spreadsheet table inputs */
+        .table-input {
+            width: 100%;
+            background: transparent;
+            border: 1px solid transparent;
+            color: inherit;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            padding: 4px 6px;
+            border-radius: 3px;
+            outline: none;
+            transition: all 0.15s;
+            text-align: right;
+            -moz-appearance: textfield;
+        }
+        .table-input::-webkit-outer-spin-button,
+        .table-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .table-input:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--border-light);
+        }
+        body.light-mode .table-input:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+        .table-input:focus {
+            background: #121214;
+            border-color: var(--brand-primary);
+            color: #fff;
+            box-shadow: 0 0 4px rgba(0, 122, 204, 0.3);
+        }
+        body.light-mode .table-input:focus {
+            background: #ffffff;
+            color: #18181b;
+        }
+        .grading-table td.base-10 input.table-input {
+            color: var(--color-10);
+            font-weight: 700;
+        }
+        body.light-mode .grading-table td.base-10 input.table-input {
+            color: var(--brand-accent);
+        }
+        .grading-table td.base-10 input.table-input:focus {
+            border-color: var(--color-10);
+            box-shadow: 0 0 4px rgba(0, 240, 255, 0.3);
+        }
+
+        /* Day Mode Light Theme Element Overrides */
+        body.light-mode .input-wrapper input {
+            background: #ffffff;
+            color: #18181b;
+        }
+        body.light-mode .size-selector {
+            background: #ffffff;
+        }
+        body.light-mode .size-btn:hover {
+            color: #18181b;
+            background: rgba(0, 0, 0, 0.05);
+        }
+        body.light-mode .size-btn.active.size-10 {
+            color: #ffffff;
+            background: var(--brand-accent);
+        }
+        body.light-mode .size-btn.active {
+            color: #ffffff;
+        }
+        body.light-mode .brand-name {
+            color: #18181b;
+        }
+        body.light-mode .brand-logo svg {
+            fill: #fff;
+        }
+        body.light-mode .table-overlay-panel {
+            background: #f4f4f5;
+        }
+        body.light-mode .table-title-group h2 {
+            color: #18181b;
+        }
+
+        .close-table-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-light);
+            color: var(--text-primary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .close-table-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #ff8080;
+        }
+
+        /* Printable Style Sheet */
+        @media print {
+            body {
+                background: #fff !important;
+                color: #000 !important;
+                overflow: visible !important;
+                height: auto !important;
+            }
+            .sidebar, .toolbar, .legend-card, .table-overlay-panel {
+                display: none !important;
+            }
+            .canvas-container {
+                background: none !important;
+                cursor: default !important;
+                width: 100% !important;
+                height: 100% !important;
+            }
+            svg#pattern-svg {
+                filter: invert(1) hue-rotate(180deg) !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR CONTROL PANEL -->
+    <aside class="sidebar">
+        <!-- Logo Header -->
+        <div class="brand-header">
+            <div class="brand-logo">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="brand-name">TELA CAD</h1>
+                <div style="display: flex; align-items: center; gap: 4px; margin-top: 1px;">
+                    <span class="brand-badge">Auto-Grader</span>
+                    <span style="font-size: 0.6rem; color: var(--text-muted); font-weight: 500;">Size 10 Base</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scrollable Properties content -->
+        <div class="sidebar-content">
+            <!-- TALLA SECTOR PRESSET -->
+            <div class="section-card">
+                <div class="section-title">
+                    <span>1. Talla Base Activa</span>
+                    <button class="reset-btn" id="reset-preset-btn">Restablecer 10</button>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div class="size-selector">
+                        <button class="size-btn size-6" data-size="6">6</button>
+                        <button class="size-btn size-8" data-size="8">8</button>
+                        <button class="size-btn size-10 active" data-size="10">10</button>
+                        <button class="size-btn size-12" data-size="12">12</button>
+                        <button class="size-btn size-14" data-size="14">14</button>
+                        <button class="size-btn size-16" data-size="16">16</button>
+                        <button class="size-btn size-18" data-size="18">18</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTORNOS -->
+            <div class="section-card">
+                <div class="section-title">
+                    <span>2. Contornos (Base Talla 10)</span>
+                    <span class="count">3</span>
+                </div>
+                <div class="inputs-grid">
+                    <div class="input-group">
+                        <label for="input-busto">Busto (B) <span class="formula">1/4 B</span></label>
+                        <div class="input-wrapper">
+                            <input type="number" id="input-busto" step="0.5" value="92">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="input-cintura">Cintura (C) <span class="formula">1/4 C</span></label>
+                        <div class="input-wrapper">
+                            <input type="number" id="input-cintura" step="0.5" value="68">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label for="input-cadera">Cadera (D) <span class="formula">1/4 D</span></label>
+                        <div class="input-wrapper">
+                            <input type="number" id="input-cadera" step="0.5" value="96">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANCHOS Y ESCOTES -->
+            <div class="section-card">
+                <div class="section-title">
+                    <span>3. Anchos y Hombros</span>
+                    <span class="count">4</span>
+                </div>
+                <div class="inputs-grid">
+                    <div class="input-group">
+                        <label for="input-espalda">Ancho Esp. (F)</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="input-espalda" step="0.5" value="35">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="input-pecho">Ancho Pecho (E)</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="input-pecho" step="0.5" value="33">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="input-hombro">Hombro (K)</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="input-hombro" step="0.25" value="12">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="input-ancho_escote">Ancho Escote (L)</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="input-ancho_escote" step="0.1" value="7.2">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALTURAS DEL TALLE -->
+            <div class="section-card">
+                <div class="section-title">
+                    <span>4. Alturas y Talles</span>
+                    <span class="count">5</span>
+                </div>
+                <div class="inputs-grid">
+                    <div class="input-group">
+                        <label for="input-talle_frente">Talle Delant.</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="input-talle_frente" step="0.5" value="44.5">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="input-talle_atras">Talle Trasero</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="input-talle_atras" step="0.5" value="42.5">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="input-centro_frente">Centro Delant.</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="input-centro_frente" step="0.25" value="37">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="input-centro_atras">Centro Trasero</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="input-centro_atras" step="0.5" value="40.5">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="input-costado">Costado</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="input-costado" step="0.25" value="19.25">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="input-largo_camisa">Largo Camisa</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="input-largo_camisa" step="0.5" value="75">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETALLES VISUALES -->
+            <div class="section-card">
+                <div class="section-title">
+                    <span>5. Ajustes Técnicos</span>
+                </div>
+                <div class="toggle-group">
+                    <div class="toggle-row">
+                        <div class="toggle-label">
+                            <span>Mostrar Guías y Niveles</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-guides" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-row">
+                        <div class="toggle-label">
+                            <span>Mostrar Puntos y Fórmulas</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-points" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXPORT ACTION BUTTONS -->
+            <div class="action-btn-group">
+                <button class="btn btn-primary" id="export-svg-btn">
+                    <svg style="width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2;" viewBox="0 0 24 24">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                    </svg>
+                    Exportar SVG Vectorial
+                </button>
+                <button class="btn btn-secondary" id="print-pattern-btn">
+                    <svg style="width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2;" viewBox="0 0 24 24">
+                        <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/>
+                    </svg>
+                    Imprimir Molde Físico
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN SVG VIEWPORT CANVAS -->
+    <main class="canvas-container" id="svg-container">
+        <!-- Floating Navigation Toolbar -->
+        <div class="toolbar">
+            <div class="view-mode-tabs">
+                <button class="tab-btn active" id="view-single-tab">Talla Individual</button>
+                <button class="tab-btn" id="view-nested-tab">Anidado (Graduación)</button>
+            </div>
+            
+            <div class="toolbar-divider"></div>
+            
+            <!-- Comparison Grid Selector -->
+            <button class="tab-btn" id="open-table-btn">Tabla de Tallas</button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <!-- Zoom Actions -->
+            <button class="tool-btn" id="zoom-in-btn" title="Zoom In (Rueda)">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </button>
+            <button class="tool-btn" id="zoom-out-btn" title="Zoom Out (Rueda)">
+                <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
+            </button>
+            <button class="tool-btn" id="zoom-reset-btn" title="Ajustar Vista (F)">
+                <svg viewBox="0 0 24 24"><path d="M15 3H6c-1.66 0-3 1.34-3 3v9c0 1.66 1.34 3 3 3h9c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3zm1 12c0 .55-.45 1-1 1H6c-.55 0-1-.45-1-1V6c0-.55.45-1 1-1h9c.55 0 1 .45 1 1v9zM8.57 8.57L11 11H8v2h6V7h-2v3L9.57 7.57z"/></svg>
+            </button>
+
+            <div class="toolbar-divider"></div>
+
+            <!-- Theme Toggle Button (Day / Night Mode) -->
+            <button class="tool-btn" id="theme-toggle-btn" title="Modo Día / Noche">
+                <svg id="theme-icon-sun" style="fill: currentColor;" viewBox="0 0 24 24">
+                    <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 0 0-1.41 0a.996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 0 0-1.41 0a.996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41l-1.06-1.06zm1.06-10.96a.996.996 0 0 0 0-1.41a.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06zM7.05 18.01a.996.996 0 0 0 0-1.41a.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06z"/>
+                </svg>
+                <svg id="theme-icon-moon" style="display: none; fill: currentColor;" viewBox="0 0 24 24">
+                    <path d="M12.3 2a10 10 0 0 0-1.9 19.8 10 10 0 0 0 11.5-11.5c-.3 0-.6.1-.9.1a8 8 0 0 1-8.7-8.4c.1-.3.1-.6.1-.9v-.1z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Floating Sizing Legend (Anidado mode only) -->
+        <div class="legend-card" id="legend-panel">
+            <span class="legend-title">Patrón de Tallas</span>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--color-6);"></div>
+                <span>Talla 6</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--color-8);"></div>
+                <span>Talla 8</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--color-10);"></div>
+                <span>Talla 10 (Base)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--color-12);"></div>
+                <span>Talla 12</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--color-14);"></div>
+                <span>Talla 14</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--color-16);"></div>
+                <span>Talla 16</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--color-18);"></div>
+                <span>Talla 18</span>
+            </div>
+        </div>
+
+        <!-- SVG Element -->
+        <svg id="pattern-svg">
+            <defs>
+                <!-- AutoCAD Subtle Grid Lines Pattern linked to theme variables -->
+                <pattern id="grid-pattern-10" width="10" height="10" patternUnits="userSpaceOnUse">
+                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="var(--grid-minor)" stroke-width="0.5"/>
+                </pattern>
+                <pattern id="grid-pattern-50" width="50" height="50" patternUnits="userSpaceOnUse">
+                    <rect width="50" height="50" fill="url(#grid-pattern-10)"/>
+                    <path d="M 50 0 L 0 0 0 50" fill="none" stroke="var(--grid-major)" stroke-width="0.7"/>
+                </pattern>
+            </defs>
+
+            <!-- Vector grid background layer -->
+            <rect width="100%" height="100%" fill="url(#grid-pattern-50)" />
+            
+            <!-- Coordinate center line indicators -->
+            <g stroke="var(--axis-color)" stroke-width="0.8">
+                <line x1="-5000" y1="0" x2="5000" y2="0" />
+                <line x1="0" y1="-5000" x2="0" y2="5000" />
+            </g>
+
+            <!-- Dynamic viewport translation group -->
+            <g id="transform-group">
+                <!-- Construction levels guide container -->
+                <g id="guides-container"></g>
+                <!-- Vector pattern curves container -->
+                <g id="patterns-container"></g>
+                <!-- Numeric anchor nodes & formulas container -->
+                <g id="points-container"></g>
+            </g>
+        </svg>
+    </main>
+
+    <!-- FULL GRADED SPREADSHEET MATRIX TABLE OVERLAY -->
+    <div class="table-overlay-panel" id="table-panel">
+        <div class="table-header-row">
+            <div class="table-title-group">
+                <h2>Cuadro de Tallas Automático (Graduación Escalar)</h2>
+                <p>Todas las medidas son auto-generadas en tiempo real aplicando las reglas de incrementos y deltas a partir de tu Talla Base 10.</p>
+            </div>
+            <button class="close-table-btn" id="close-table-btn" title="Cerrar Cuadro">
+                <svg style="width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5;" viewBox="0 0 24 24">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="grading-table-container">
+            <table class="grading-table">
+                <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Medidas</th>
+                        <th>6 (XS)</th>
+                        <th>8 (S)</th>
+                        <th class="base-10" style="color: #00f0ff; background: rgba(0, 240, 255, 0.05);">10 (BASE)</th>
+                        <th>12 (L)</th>
+                        <th>14 (XL)</th>
+                        <th>16 (XXL)</th>
+                        <th>18 (XXXL)</th>
+                    </tr>
+                </thead>
+                <tbody id="grading-table-body">
+                    <!-- Dynamic Spreadsheet Rows populated by javascript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MAIN INTERACTIVE CAD JS SCRIPTS -->
+    <script>
+        // Standard baseline presets for M (Talla 10 - Highlighted base)
+        const BASE_PRESETS = {
+            busto: 92,
+            cintura: 68,
+            cadera: 96,
+            espalda: 35,
+            pecho: 33,
+            talle_frente: 44.5,
+            talle_atras: 42.5,
+            centro_frente: 37,
+            centro_atras: 40.5,
+            costado: 19.25,
+            hombro: 12,
+            largo_camisa: 75,
+            ancho_escote: 7.2 // Neck width
+        };
+
+        // Graduating scale lookup table for size scaling indices
+        const SIZE_INDEX = { '6': -2, '8': -1, '10': 0, '12': 1, '14': 2, '16': 3, '18': 4 };
+
+        // Non-linear industrial grading delta charts relative to Base 10 from docs/03.png
+        const GRADING_DELTAS = {
+            busto:         [-8,  -4,  0,  4,  8,   14,  20],  // 84, 88, 92, 96, 100, 106, 112
+            cintura:       [-8,  -4,  0,  4,  8,   14,  20],  // 60, 64, 68, 72, 76, 82, 88
+            cadera:        [-8,  -4,  0,  4,  8,   14,  20],  // 88, 92, 96, 100, 104, 110, 116
+            espalda:       [-2,  -1,  0,  1,  2,   3.5, 5],   // 33, 34, 35, 36, 37, 38.5, 40
+            pecho:         [-2,  -1,  0,  1,  2,   3.5, 5],   // 31, 32, 33, 34, 35, 36.5, 38
+            talle_frente:  [-1,  -0.5,0,  0.5,1,   1.75,2.5], // 43.5, 44, 44.5, 45, 45.5, 46.25, 47
+            talle_atras:   [-1,  -0.5,0,  0.5,1,   1.75,2.5], // 41.5, 42, 42.5, 43, 43.5, 44.25, 45
+            centro_frente: [-0.5,-0.25,0, 0.25,0.5,0.75,1.25],// 36.5, 36.75, 37, 37.25, 37.5, 37.75, 38.25
+            centro_atras:  [-1,  -0.5,0,  0.5,1,   1.75,2.5], // 39.5, 40, 40.5, 41, 41.5, 42.25, 43
+            costado:       [-0.5,-0.25,0, 0.25,0.5,1.0, 1.25], // 18.75, 19, 19.25, 19.5, 19.75, 20.25, 20.5
+            hombro:        [-0.5,-0.25,0, 0.25,0.5,0.75,1.25], // 11.5, 11.75, 12, 12.25, 12.5, 12.75, 13.25
+            largo_camisa:  [-3,  -1.5,0,  1.5,3,   4.5, 6],   // 72, 73.5, 75, 76.5, 78, 79.5, 81
+            ancho_escote:  [-0.5,-0.25,0, 0.25,0.5,0.75,1.0]  // Escote scales slightly
+        };
+
+        // CAD Sizing line Colors
+        const SIZE_COLORS = {
+            '6':  'var(--color-6)',
+            '8':  'var(--color-8)',
+            '10': 'var(--color-10)',
+            '12': 'var(--color-12)',
+            '14': 'var(--color-14)',
+            '16': 'var(--color-16)',
+            '18': 'var(--color-18)'
+        };
+
+        // Variable Spanish descriptions
+        const VARIABLE_DESCRIPTIONS = {
+            busto: 'Contorno de busto',
+            cintura: 'Contorno de cintura',
+            cadera: 'Contorno de cadera',
+            espalda: 'Ancho de espalda',
+            pecho: 'Ancho de pecho',
+            talle_frente: 'Talle frente',
+            talle_atras: 'Talle atrás',
+            centro_frente: 'Centro frente',
+            centro_atras: 'Centro atrás',
+            costado: 'Costado',
+            hombro: 'Hombro',
+            largo_camisa: 'Largo camisa',
+            ancho_escote: 'Ancho escote (L)'
+        };
+
+        // Technical Drafting Formula string representations
+        const DRAFTING_FORMULAS = {
+            busto: '1/4 Busto',
+            cintura: '1/4 Cintura',
+            cadera: '1/4 Cadera',
+            espalda: '1/2 Espalda',
+            pecho: '1/2 Pecho',
+            talle_frente: 'Talle Frente H',
+            talle_atras: 'Talle Atrás H',
+            centro_frente: 'C.F. (Neck Depth = H-CF)',
+            centro_atras: 'C.A. (Neck Depth = H-CA)',
+            costado: 'Costado (Armhole height)',
+            hombro: 'Hombro exacto K',
+            largo_camisa: 'Largo Total O',
+            ancho_escote: 'Escote L'
+        };
+
+        // Initial App State
+        let currentSize = '10';
+        let viewMode = 'single';
+        let showGuides = true;
+        let showPoints = true;
+
+        // Editable User Base values
+        let userBase = { ...BASE_PRESETS };
+
+        // Vector CAD space scale multiplier (1 cm = 10 pixels!)
+        const CM_TO_PX = 10;
+
+        // Viewport Pan & Zoom coordinates (Starts fitting beautifully)
+        let zoom = 0.65;
+        let tx = window.innerWidth / 2 - 320;
+        let ty = 80;
+        let isDragging = false;
+        let startX, startY;
+
+        // DOM Caches
+        const svg = document.getElementById('pattern-svg');
+        const transformGroup = document.getElementById('transform-group');
+        const guidesContainer = document.getElementById('guides-container');
+        const patternsContainer = document.getElementById('patterns-container');
+        const pointsContainer = document.getElementById('points-container');
+        const sizeButtons = document.querySelectorAll('.size-btn');
+        const viewSingleTab = document.getElementById('view-single-tab');
+        const viewNestedTab = document.getElementById('view-nested-tab');
+        const legendPanel = document.getElementById('legend-panel');
+        const openTableBtn = document.getElementById('open-table-btn');
+        const closeTableBtn = document.getElementById('close-table-btn');
+        const tablePanel = document.getElementById('table-panel');
+        const gradingTableBody = document.getElementById('grading-table-body');
+        const resetPresetBtn = document.getElementById('reset-preset-btn');
+        const exportSvgBtn = document.getElementById('export-svg-btn');
+        const printPatternBtn = document.getElementById('print-pattern-btn');
+
+        const inputIds = Object.keys(BASE_PRESETS);
+
+        // Grading rule calculator applying exact non-linear deltas to custom base
+        function getMeasurementsForSize(size) {
+            const idx = SIZE_INDEX[size];
+            const measurements = {};
+            inputIds.forEach(id => {
+                const deltaArr = GRADING_DELTAS[id];
+                if (deltaArr) {
+                    measurements[id] = userBase[id] + deltaArr[idx + 2]; // map -2..2 to index 0..6
+                } else {
+                    measurements[id] = userBase[id];
+                }
+            });
+            return measurements;
+        }
+
+        // Drafting equations based on the handwritten diagrams
+        function calculatePatternPoints(m, originX, originY) {
+            // N (Back neck depth) = talle_atras - centro_atras
+            const N = (m.talle_atras - m.centro_atras) * CM_TO_PX;
+            // M (Front neck depth) = talle_frente - centro_frente
+            const M = (m.talle_frente - m.centro_frente) * CM_TO_PX;
+            
+            // Y_chest (Armhole line) = - (talle_atras - costado)
+            const Y_chest = -(m.talle_atras - m.costado) * CM_TO_PX;
+            
+            // Waist levels
+            const Y_waist_back = -m.talle_atras * CM_TO_PX;
+            const Y_waist_front = -m.talle_frente * CM_TO_PX;
+            
+            // Hem Y level (keeps side seams matched on stitches)
+            const waist_to_hem = (m.largo_camisa - 42.5) * CM_TO_PX; // 42.5 is size 10 waist back
+            const Y_hem_back = Y_waist_back - waist_to_hem;
+            const Y_hem_front = Y_waist_front - waist_to_hem;
+            
+            // Neck width
+            const L = m.ancho_escote * CM_TO_PX;
+            
+            // Hombro caída: standard 4cm front / 3.5cm back, graded
+            const hombroIndex = SIZE_INDEX[currentSize] || 0;
+            const caida_back = (3.5 + 0.1 * hombroIndex) * CM_TO_PX;
+            const caida_front = (4.0 + 0.1 * hombroIndex) * CM_TO_PX;
+
+            // Outer shoulder tip Pt 7 calculated by circle intersection to ensure hombro is EXACT!
+            const X_7_back = L + Math.sqrt(Math.max(0, (m.hombro * CM_TO_PX) ** 2 - caida_back ** 2));
+            const X_7_front = L + Math.sqrt(Math.max(0, (m.hombro * CM_TO_PX) ** 2 - caida_front ** 2));
+            
+            // Point 13 and 14:
+            // Back mid-sisa
+            const Y_13_back = (Y_chest + (-N)) / 2;
+            const X_14_back = (m.espalda / 2) * CM_TO_PX;
+            
+            // Front mid-sisa
+            const Y_13_front = (Y_chest + (-M)) / 2;
+            const X_14_front = (m.pecho / 2) * CM_TO_PX;
+
+            // Front coordinates list
+            const front = {
+                1:  { x: 0, y: 0 },
+                2:  { x: 0, y: Y_hem_front },
+                3:  { x: (m.cadera / 4) * CM_TO_PX, y: Y_hem_front },
+                4:  { x: 0, y: Y_waist_front },
+                5:  { x: (m.cintura / 4) * CM_TO_PX, y: Y_waist_front },
+                6:  { x: X_7_front, y: 0 }, 
+                7:  { x: X_7_front, y: -caida_front },
+                8:  { x: 0, y: Y_chest },
+                9:  { x: (m.busto / 4) * CM_TO_PX, y: Y_chest },
+                10: { x: L, y: 0 },
+                11: { x: 0, y: -M },
+                12: { x: 2 * CM_TO_PX, y: -M }, 
+                13: { x: 0, y: Y_13_front },
+                14: { x: X_14_front, y: Y_13_front }
+            };
+
+            // Back coordinates list
+            const back = {
+                1:  { x: 0, y: 0 },
+                2:  { x: 0, y: Y_hem_back },
+                3:  { x: (m.cadera / 4) * CM_TO_PX, y: Y_hem_back },
+                4:  { x: 0, y: Y_waist_back },
+                5:  { x: (m.cintura / 4) * CM_TO_PX, y: Y_waist_back },
+                6:  { x: X_7_back, y: 0 }, 
+                7:  { x: X_7_back, y: -caida_back },
+                8:  { x: 0, y: Y_chest },
+                9:  { x: (m.busto / 4) * CM_TO_PX, y: Y_chest },
+                10: { x: L, y: 0 },
+                13: { x: 0, y: Y_13_back },
+                14: { x: X_14_back, y: Y_13_back },
+                15: { x: 0, y: -N }
+            };
+
+            // Translate both side-by-side (550px spacing)
+            const translate = (points, ox, oy) => {
+                const shifted = {};
+                for (let p in points) {
+                    shifted[p] = {
+                        x: ox + points[p].x,
+                        y: oy - points[p].y // Negate Y since screen goes down and pattern drafting goes up!
+                    };
+                }
+                return shifted;
+            };
+
+            return {
+                front: translate(front, originX, originY),
+                back: translate(back, originX + 550, originY)
+            };
+        }
+
+        // Draw clean levels and guidelines without screen glowing filters
+        function drawGuides(front, back, m, originY) {
+            if (!showGuides) {
+                guidesContainer.innerHTML = '';
+                return;
+            }
+
+            const N = (m.talle_atras - m.centro_atras) * CM_TO_PX;
+            const M = (m.talle_frente - m.centro_frente) * CM_TO_PX;
+            const Y_chest = -(m.talle_atras - m.costado) * CM_TO_PX;
+            
+            const Y_waist_back = -m.talle_atras * CM_TO_PX;
+            const Y_waist_front = -m.talle_frente * CM_TO_PX;
+            
+            const waist_to_hem = (m.largo_camisa - 42.5) * CM_TO_PX;
+            const Y_hem_back = Y_waist_back - waist_to_hem;
+            const Y_hem_front = Y_waist_front - waist_to_hem;
+
+            const yNeck = originY;
+            const yChest = originY - Y_chest;
+            const yWaistBack = originY - Y_waist_back;
+            const yWaistFront = originY - Y_waist_front;
+            const yHemBack = originY - Y_hem_back;
+            const yHemFront = originY - Y_hem_front;
+
+            const w = 1250;
+
+            guidesContainer.innerHTML = `
+                <!-- Horizontal Guide Lines -->
+                <g stroke="rgba(255, 255, 255, 0.08)" stroke-width="0.8" stroke-dasharray="3,4">
+                    <line x1="50" y1="${yNeck}" x2="${w}" y2="${yNeck}" />
+                    <line x1="50" y1="${originY - (-M)}" x2="450" y2="${originY - (-M)}" />
+                    <line x1="500" y1="${originY - (-N)}" x2="${w}" y2="${originY - (-N)}" />
+                    
+                    <line x1="50" y1="${yChest}" x2="${w}" y2="${yChest}" />
+                    
+                    <line x1="50" y1="${yWaistFront}" x2="450" y2="${yWaistFront}" />
+                    <line x1="500" y1="${yWaistBack}" x2="${w}" y2="${yWaistBack}" />
+                    
+                    <line x1="50" y1="${yHemFront}" x2="450" y2="${yHemFront}" />
+                    <line x1="500" y1="${yHemBack}" x2="${w}" y2="${yHemBack}" />
+                </g>
+
+                <!-- Technical Labels -->
+                <g fill="var(--text-muted)" font-family="var(--font-mono)" font-size="7.5" letter-spacing="0.5">
+                    <text x="52" y="${yNeck - 5}">NIVEL CUELLO (Y=0)</text>
+                    <text x="52" y="${yChest - 5}">NIVEL SISA / PECHO (Y = -Talle + Costado)</text>
+                    <text x="52" y="${yWaistFront - 5}">NIVEL CINTURA DELANT. (Y = -Talle Frente)</text>
+                    <text x="502" y="${yWaistBack - 5}">NIVEL CINTURA TRASERA (Y = -Talle Atrás)</text>
+                    <text x="52" y="${yHemFront - 5}">NIVEL RUEDO DELANT. (Y = -Talle Frente - Faldón)</text>
+                    <text x="502" y="${yHemBack - 5}">NIVEL RUEDO TRASERO (Y = -Talle Atrás - Faldón)</text>
+                </g>
+            `;
+        }
+
+        // Draw crisp vector curves like Illustrator (No glowing filters, sharp lines)
+        function drawPatternPaths(front, back, color, isBase, sizeLabel) {
+            // Front Neck curve (starts at center neck Pt 11 and curves up to shoulder-neck Pt 10)
+            const frontNeck = `M ${front[11].x} ${front[11].y} C ${front[12].x} ${front[12].y}, ${front[10].x} ${front[10].y + (front[11].y - front[10].y) * 0.45}, ${front[10].x} ${front[10].y}`;
+            const frontShoulder = `L ${front[7].x} ${front[7].y}`;
+            const frontSisa = `
+                C ${front[7].x} ${front[7].y + (front[14].y - front[7].y) * 0.4},
+                  ${front[14].x} ${front[14].y - (front[14].y - front[7].y) * 0.25},
+                  ${front[14].x} ${front[14].y}
+                C ${front[14].x} ${front[14].y + (front[9].y - front[14].y) * 0.5},
+                  ${front[14].x + (front[9].x - front[14].x) * 0.3} ${front[9].y},
+                  ${front[9].x} ${front[9].y}
+            `;
+            const frontSide = `
+                C ${front[9].x} ${front[9].y + (front[5].y - front[9].y) * 0.45},
+                  ${front[5].x} ${front[5].y - (front[5].y - front[9].y) * 0.3},
+                  ${front[5].x} ${front[5].y}
+                C ${front[5].x} ${front[5].y + (front[3].y - front[5].y) * 0.4},
+                  ${front[3].x} ${front[3].y - (front[3].y - front[5].y) * 0.25},
+                  ${front[3].x} ${front[3].y}
+            `;
+            const frontHem = `L ${front[2].x} ${front[2].y}`;
+            const frontCenter = `L ${front[11].x} ${front[11].y}`;
+
+            const frontPath = `${frontNeck} ${frontShoulder} ${frontSisa} ${frontSide} ${frontHem} ${frontCenter} Z`;
+
+            // Back Neck curve (starts at center neck Pt 15 and curves up to shoulder-neck Pt 10)
+            // Utilizes relative difference to avoid multiplying shifted origin coordinate space
+            const backNeck = `M ${back[15].x} ${back[15].y} C ${back[15].x + (back[10].x - back[15].x) * 0.4} ${back[15].y}, ${back[15].x + (back[10].x - back[15].x) * 0.75} ${back[10].y}, ${back[10].x} ${back[10].y}`;
+            const backShoulder = `L ${back[7].x} ${back[7].y}`;
+            const backSisa = `
+                C ${back[7].x} ${back[7].y + (back[14].y - back[7].y) * 0.4},
+                  ${back[14].x} ${back[14].y - (back[14].y - back[7].y) * 0.25},
+                  ${back[14].x} ${back[14].y}
+                C ${back[14].x} ${back[14].y + (back[9].y - back[14].y) * 0.5},
+                  ${back[14].x + (back[9].x - back[14].x) * 0.3} ${back[9].y},
+                  ${back[9].x} ${back[9].y}
+            `;
+            const backSide = `
+                C ${back[9].x} ${back[9].y + (back[5].y - back[9].y) * 0.45},
+                  ${back[5].x} ${back[5].y - (back[5].y - back[9].y) * 0.3},
+                  ${back[5].x} ${back[5].y}
+                C ${back[5].x} ${back[5].y + (back[3].y - back[5].y) * 0.4},
+                  ${back[3].x} ${back[3].y - (back[3].y - back[5].y) * 0.25},
+                  ${back[3].x} ${back[3].y}
+            `;
+            const backHem = `L ${back[2].x} ${back[2].y}`;
+            const backCenter = `L ${back[15].x} ${back[15].y}`;
+
+            const backPath = `${backNeck} ${backShoulder} ${backSisa} ${backSide} ${backHem} ${backCenter} Z`;
+
+            // Compact razor styles
+            const strokeWidth = (viewMode === 'nested') ? (isBase ? 2.0 : 1.0) : 1.8;
+            const opacity = (viewMode === 'nested') ? (isBase ? 1 : 0.45) : 1;
+            const dashArray = (viewMode === 'nested' && !isBase) ? '1,1' : 'none';
+
+            patternsContainer.innerHTML += `
+                <!-- Delantero -->
+                <path d="${frontPath}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-opacity="${opacity}" stroke-dasharray="${dashArray}" />
+                <!-- Espalda -->
+                <path d="${backPath}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-opacity="${opacity}" stroke-dasharray="${dashArray}" />
+            `;
+        }
+
+        // Draw neat vector square anchor nodes (■) and small labels with no overlaps!
+        function drawPointsAndLabels(front, back, m) {
+            if (!showPoints || viewMode === 'nested') {
+                pointsContainer.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            const fColor = 'var(--brand-accent)';
+            const bColor = 'var(--brand-secondary)';
+
+            // Front anchor nodes (1-14)
+            const frontPointFormulas = {
+                1: '0, 0',
+                2: '0, -O',
+                3: '1/4 Cadera, -O',
+                4: '0, -Talle Frente',
+                5: '1/4 Cintura, -Talle',
+                6: 'Hombro drop guide',
+                7: 'Shoulder tip (Hombro exacto)',
+                8: '0, -Talle + Costado',
+                9: '1/4 Busto, Y_sisa',
+                10: 'Escote L, 0',
+                11: '0, -Escote Depth (Talle-CF)',
+                12: '2cm, -Escote Depth',
+                13: '0, Sisa Mid',
+                14: '1/2 Pecho, Sisa Mid'
+            };
+
+            for (let p = 1; p <= 14; p++) {
+                const pt = front[p];
+                if (!pt) continue;
+                html += `
+                    <g class="point-node">
+                        <!-- Solid Anchor Square like Illustrator -->
+                        <rect x="${pt.x - 3.5}" y="${pt.y - 3.5}" width="7" height="7" fill="#161618" stroke="${fColor}" stroke-width="1.2" />
+                        <!-- Small circle tag shifted left/up so it doesn't overlap the square anchor! -->
+                        <circle cx="${pt.x - 12}" cy="${pt.y - 12}" r="6.5" fill="#222226" stroke="${fColor}" stroke-width="0.8" />
+                        <text x="${pt.x - 12}" y="${pt.y - 9.5}" fill="#fff" font-family="var(--font-mono)" font-size="7" font-weight="bold" text-anchor="middle">${p}</text>
+                        <!-- Crisp formula text -->
+                        <text x="${pt.x + 8}" y="${pt.y + 3}" fill="var(--text-secondary)" font-family="var(--font-mono)" font-size="7.2">${frontPointFormulas[p]}</text>
+                    </g>
+                `;
+            }
+
+            // Back anchor nodes (1-15)
+            const backPointFormulas = {
+                1: '0, 0',
+                2: '0, -O',
+                3: '1/4 Cadera, -O',
+                4: '0, -Talle Atrás',
+                5: '1/4 Cintura, -Talle',
+                6: 'Hombro drop guide',
+                7: 'Shoulder tip (Hombro exacto)',
+                8: '0, -Talle + Costado',
+                9: '1/4 Busto, Y_sisa',
+                10: 'Escote L, 0',
+                13: '0, Sisa Mid',
+                14: '1/2 Espalda, Sisa Mid',
+                15: '0, -Escote Depth (Talle-CA)'
+            };
+
+            const backPoints = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15];
+            backPoints.forEach(p => {
+                const pt = back[p];
+                if (!pt) return;
+                html += `
+                    <g class="point-node">
+                        <!-- Solid Anchor Square -->
+                        <rect x="${pt.x - 3.5}" y="${pt.y - 3.5}" width="7" height="7" fill="#161618" stroke="${bColor}" stroke-width="1.2" />
+                        <!-- Small circle tag shifted -->
+                        <circle cx="${pt.x - 12}" cy="${pt.y - 12}" r="6.5" fill="#222226" stroke="${bColor}" stroke-width="0.8" />
+                        <text x="${pt.x - 12}" y="${pt.y - 9.5}" fill="#fff" font-family="var(--font-mono)" font-size="7" font-weight="bold" text-anchor="middle">${p}</text>
+                        <!-- Crisp formula text -->
+                        <text x="${pt.x + 8}" y="${pt.y + 3}" fill="var(--text-secondary)" font-family="var(--font-mono)" font-size="7.2">${backPointFormulas[p]}</text>
+                    </g>
+                `;
+            });
+
+            // Floaters pattern headers
+            html += `
+                <g font-family="var(--font-mono)" font-size="11" font-weight="bold" fill="#fff" letter-spacing="1">
+                    <text x="${front[1].x + 130}" y="${front[1].y - 35}" text-anchor="middle">DELANTERO (FRONT)</text>
+                    <text x="${back[1].x + 130}" y="${back[1].y - 35}" text-anchor="middle">ESPALDA (BACK)</text>
+                </g>
+            `;
+
+            pointsContainer.innerHTML = html;
+        }
+
+        // Draw and update whole canvas layers
+        function render() {
+            patternsContainer.innerHTML = '';
+            const originX = 100;
+            const originY = 150;
+
+            if (viewMode === 'nested') {
+                const sizes = ['6', '8', '10', '12', '14', '16', '18'];
+                sizes.forEach(size => {
+                    const m = getMeasurementsForSize(size);
+                    const coords = calculatePatternPoints(m, originX, originY);
+                    const color = SIZE_COLORS[size];
+                    const isBase = (size === currentSize);
+                    drawPatternPaths(coords.front, coords.back, color, isBase, size);
+                });
+                
+                // Active size guides & point annotations
+                const activeM = getMeasurementsForSize(currentSize);
+                const activeCoords = calculatePatternPoints(activeM, originX, originY);
+                drawGuides(activeCoords.front, activeCoords.back, activeM, originY);
+                drawPointsAndLabels(activeCoords.front, activeCoords.back, activeM);
+            } else {
+                // Single Size Mode
+                const m = getMeasurementsForSize(currentSize);
+                const coords = calculatePatternPoints(m, originX, originY);
+                const color = SIZE_COLORS[currentSize];
+                
+                drawGuides(coords.front, coords.back, m, originY);
+                drawPatternPaths(coords.front, coords.back, color, true, currentSize);
+                drawPointsAndLabels(coords.front, coords.back, m);
+            }
+        }
+
+        // Auto-generate spreadsheet comparer grid matching docs/03.png deltas exactly
+        function updateGradingTable() {
+            let html = '';
+            inputIds.forEach(id => {
+                const desc = VARIABLE_DESCRIPTIONS[id];
+                const deltaArr = GRADING_DELTAS[id];
+                
+                const val6  = userBase[id] + deltaArr[0];
+                const val8  = userBase[id] + deltaArr[1];
+                const val10 = userBase[id] + deltaArr[2]; // Base 10
+                const val12 = userBase[id] + deltaArr[3];
+                const val14 = userBase[id] + deltaArr[4];
+                const val16 = userBase[id] + deltaArr[5];
+                const val18 = userBase[id] + deltaArr[6];
+
+                html += `
+                    <tr data-var="${id}">
+                        <td class="var-code">${id.toUpperCase()}</td>
+                        <td class="var-desc">${desc}</td>
+                        <td class="size-val"><input type="number" step="0.1" class="table-input" data-size-idx="0" value="${val6.toFixed(1)}"></td>
+                        <td class="size-val"><input type="number" step="0.1" class="table-input" data-size-idx="1" value="${val8.toFixed(1)}"></td>
+                        <td class="size-val base-10"><input type="number" step="0.1" class="table-input base-10-input" data-size-idx="2" value="${val10.toFixed(1)}"></td>
+                        <td class="size-val"><input type="number" step="0.1" class="table-input" data-size-idx="3" value="${val12.toFixed(1)}"></td>
+                        <td class="size-val"><input type="number" step="0.1" class="table-input" data-size-idx="4" value="${val14.toFixed(1)}"></td>
+                        <td class="size-val"><input type="number" step="0.1" class="table-input" data-size-idx="5" value="${val16.toFixed(1)}"></td>
+                        <td class="size-val"><input type="number" step="0.1" class="table-input" data-size-idx="6" value="${val18.toFixed(1)}"></td>
+                    </tr>
+                `;
+            });
+            gradingTableBody.innerHTML = html;
+        }
+
+        // Pull state value back to sidebar properties form
+        function loadInputsFromState() {
+            inputIds.forEach(id => {
+                const el = document.getElementById(`input-${id}`);
+                if (el) el.value = userBase[id];
+            });
+            updateGradingTable();
+        }
+
+        // Apply viewport translation zoom matrix directly
+        function updateTransform() {
+            transformGroup.setAttribute('transform', `translate(${tx}, ${ty}) scale(${zoom})`);
+        }
+
+        // Fit bounds calculation
+        function resetZoom() {
+            zoom = 0.65;
+            tx = window.innerWidth / 2 - 320;
+            ty = 80;
+            updateTransform();
+        }
+
+        // PAN MOUSE EVENT LISTENERS
+        const canvasContainer = document.getElementById('svg-container');
+
+        canvasContainer.addEventListener('pointerdown', (e) => {
+            if (e.target.closest('.toolbar') || e.target.closest('.legend-card')) return;
+            isDragging = true;
+            startX = e.clientX - tx;
+            startY = e.clientY - ty;
+            canvasContainer.setPointerCapture(e.pointerId);
+        });
+
+        canvasContainer.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            tx = e.clientX - startX;
+            ty = e.clientY - startY;
+            updateTransform();
+        });
+
+        canvasContainer.addEventListener('pointerup', (e) => {
+            isDragging = false;
+        });
+
+        // ZOOM VIA MOUSE WHEEL SCROLL
+        canvasContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const rect = svg.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const svgX = (mouseX - tx) / zoom;
+            const svgY = (mouseY - ty) / zoom;
+            
+            const zoomFactor = 1 - e.deltaY * 0.0012;
+            const newScale = Math.min(Math.max(zoom * zoomFactor, 0.15), 5.0);
+            
+            tx = mouseX - svgX * newScale;
+            ty = mouseY - svgY * newScale;
+            zoom = newScale;
+            
+            updateTransform();
+        }, { passive: false });
+
+        // ACTION BUTTON ZOOM CLICKS
+        document.getElementById('zoom-in-btn').addEventListener('click', () => {
+            zoom = Math.min(zoom * 1.15, 5.0);
+            updateTransform();
+        });
+
+        document.getElementById('zoom-out-btn').addEventListener('click', () => {
+            zoom = Math.max(zoom * 0.85, 0.15);
+            updateTransform();
+        });
+
+        document.getElementById('zoom-reset-btn').addEventListener('click', resetZoom);
+
+        // FORM PROPERTIES BINDINGS
+        inputIds.forEach(id => {
+            const input = document.getElementById(`input-${id}`);
+            if (input) {
+                input.addEventListener('input', (e) => {
+                    const val = parseFloat(e.target.value);
+                    if (!isNaN(val) && val > 0) {
+                        userBase[id] = val;
+                        render();
+                        updateGradingTable();
+                    }
+                });
+            }
+        });
+
+        // SIZE BTN TRIGGER BINDINGS
+        sizeButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                sizeButtons.forEach(b => {
+                    b.classList.remove('active');
+                    // Clean color sizing classes
+                    b.classList.remove('size-6', 'size-8', 'size-10', 'size-12', 'size-14', 'size-16', 'size-18');
+                });
+                
+                const btnSize = e.target.getAttribute('data-size');
+                currentSize = btnSize;
+                
+                e.target.classList.add('active');
+                e.target.classList.add(`size-${btnSize}`);
+                
+                render();
+            });
+        });
+
+        // VIEW TABS TRIGGER BINDINGS
+        viewSingleTab.addEventListener('click', () => {
+            viewSingleTab.classList.add('active');
+            viewNestedTab.classList.remove('active');
+            legendPanel.classList.remove('visible');
+            viewMode = 'single';
+            render();
+        });
+
+        viewNestedTab.addEventListener('click', () => {
+            viewNestedTab.classList.add('active');
+            viewSingleTab.classList.remove('active');
+            legendPanel.classList.add('visible');
+            viewMode = 'nested';
+            render();
+        });
+
+        // TOGGLES BINDINGS
+        document.getElementById('toggle-guides').addEventListener('change', (e) => {
+            showGuides = e.target.checked;
+            render();
+        });
+
+        document.getElementById('toggle-points').addEventListener('change', (e) => {
+            showPoints = e.target.checked;
+            render();
+        });
+
+        // RESET PRESET BUTTON
+        resetPresetBtn.addEventListener('click', () => {
+            userBase = { ...BASE_PRESETS };
+            loadInputsFromState();
+            render();
+        });
+
+        // SPREADSHEET OVERLAY TRIGGERS
+        openTableBtn.addEventListener('click', () => {
+            updateGradingTable();
+            tablePanel.classList.add('visible');
+        });
+
+        closeTableBtn.addEventListener('click', () => {
+            tablePanel.classList.remove('visible');
+        });
+
+        // Table Editable Inputs Event Handler (Updates and syncs real-time pattern calculations)
+        gradingTableBody.addEventListener('input', (e) => {
+            if (e.target.classList.contains('table-input') || e.target.classList.contains('base-10-input')) {
+                const row = e.target.closest('tr');
+                const id = row.getAttribute('data-var');
+                const k = parseInt(e.target.getAttribute('data-size-idx'));
+                const val = parseFloat(e.target.value);
+                if (!isNaN(val) && val >= 0) {
+                    const deltaArr = GRADING_DELTAS[id];
+                    // Back out the new base-10 value
+                    userBase[id] = val - deltaArr[k];
+                    
+                    // Sync the sidebar property input
+                    const sidebarInput = document.getElementById(`input-${id}`);
+                    if (sidebarInput) {
+                        sidebarInput.value = userBase[id];
+                    }
+                    
+                    // Dynamically update other inputs in the same row
+                    const rowInputs = row.querySelectorAll('input');
+                    rowInputs.forEach(inp => {
+                        if (inp !== e.target) {
+                            const idx = parseInt(inp.getAttribute('data-size-idx'));
+                            inp.value = (userBase[id] + deltaArr[idx]).toFixed(1);
+                        }
+                    });
+                    
+                    render();
+                }
+            }
+        });
+
+        // THEME TOGGLE (DAY / NIGHT) JS BINDING
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        const themeIconSun = document.getElementById('theme-icon-sun');
+        const themeIconMoon = document.getElementById('theme-icon-moon');
+
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            if (isLight) {
+                themeIconSun.style.display = 'none';
+                themeIconMoon.style.display = 'block';
+            } else {
+                themeIconSun.style.display = 'block';
+                themeIconMoon.style.display = 'none';
+            }
+        });
+
+        // VECTOR SVG EXPORT
+        exportSvgBtn.addEventListener('click', () => {
+            const clonedSvg = svg.cloneNode(true);
+            clonedSvg.setAttribute('width', '1600px');
+            clonedSvg.setAttribute('height', '1000px');
+            clonedSvg.setAttribute('viewBox', '0 0 1600 1000');
+            
+            const g = clonedSvg.querySelector('#transform-group');
+            if (g) {
+                g.setAttribute('transform', 'translate(100, 150) scale(1)');
+            }
+            
+            clonedSvg.style.backgroundColor = '#ffffff';
+            clonedSvg.querySelector('rect').setAttribute('fill', '#ffffff');
+            
+            const outLines = clonedSvg.querySelectorAll('.pattern-outline');
+            outLines.forEach(line => {
+                if (viewMode === 'single') {
+                    line.setAttribute('stroke', '#000000');
+                    line.setAttribute('stroke-width', '1.5');
+                }
+            });
+
+            const txt = clonedSvg.querySelectorAll('text');
+            txt.forEach(t => {
+                t.setAttribute('fill', '#333333');
+            });
+
+            const svgString = new XMLSerializer().serializeToString(clonedSvg);
+            const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `tela_patron_camisa_talla10_${viewMode}.svg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // PHYSICAL PRINT
+        printPatternBtn.addEventListener('click', () => {
+            window.print();
+        });
+
+        // Keyboard Shortcuts (AutoCAD classic!)
+        window.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT') return;
+            // 'F' key to zoom fit!
+            if (e.key.toLowerCase() === 'f') {
+                resetZoom();
+            }
+        });
+
+        // Boot Init
+        loadInputsFromState();
+        resetZoom();
+        render();
+
+        window.addEventListener('resize', () => {
+            tx = window.innerWidth / 2 - 320;
+            updateTransform();
+        });
+    </script>
+</body>
+</html>
