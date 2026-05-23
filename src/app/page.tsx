@@ -94,18 +94,123 @@ const DRAFTING_FORMULAS: Record<string, string> = {
 const CM_TO_PX = 10;
 
 // Math Equations Database for KaTeX Rendering
-const EQUATIONS_DATABASE = [
-  { id: "L", title: "Ancho de Escote (L)", formula: "L = \\text{ancho\\_escote} \\times 10\\text{px}", desc: "Determina el ancho inicial del cuello." },
-  { id: "M", title: "Escote Profundo Frente (M)", formula: "M = (\\text{talle\\_frente} - \\text{centro\\_frente}) \\times 10\\text{px}", desc: "Calcula la profundidad de la caja del cuello delantero." },
-  { id: "N", title: "Escote Profundo Trasero (N)", formula: "N = (\\text{talle\\_atras} - \\text{centro\\_atras}) \\times 10\\text{px}", desc: "Calcula la profundidad del escote de la espalda." },
-  { id: "Y_chest", title: "Línea de Sisa / Pecho (Y_chest)", formula: "Y_{\\text{chest}} = -(\\text{talle\\_atras} - \\text{costado}) \\times 10\\text{px}", desc: "Define la altura horizontal de la sisa/pecho en el molde." },
-  { id: "Y_waist_back", title: "Altura Cintura Trasera (Y_waist_back)", formula: "Y_{\\text{waist\\_back}} = -\\text{talle\\_atras} \\times 10\\text{px}", desc: "Nivel de la cintura en la espalda." },
-  { id: "Y_waist_front", title: "Altura Cintura Delantera (Y_waist_front)", formula: "Y_{\\text{waist\\_front}} = -\\text{talle\\_frente} \\times 10\\text{px}", desc: "Nivel de la cintura en el delantero." },
-  { id: "waist_to_hem", title: "Faldón / Ruedo Total (waist_to_hem)", formula: "W_{\\text{hem}} = (\\text{largo\\_camisa} - 42.5) \\times 10\\text{px}", desc: "Largo de la camisa medido por debajo de la cintura base." },
-  { id: "X_7_front", title: "Hombro Caído Delantero (X_7_front)", formula: "X_{7\\text{, front}} = L + \\sqrt{(\\text{hombro} \\times 10)^2 - \\text{caída\\_front}^2}", desc: "Punto exacto del hombro delantero aplicando teorema de Pitágoras para mantener la longitud exacta." },
-  { id: "X_7_back", title: "Hombro Caído Trasero (X_7_back)", formula: "X_{7\\text{, back}} = L + \\sqrt{(\\text{hombro} \\times 10)^2 - \\text{caída\\_back}^2}", desc: "Punto exacto del hombro trasero aplicando Pitágoras." },
-  { id: "X_14_front", title: "Sisa Media Delantero (X_14_front)", formula: "X_{14\\text{, front}} = \\frac{\\text{pecho}}{2} \\times 10\\text{px}", desc: "Ancho medio del pecho delantero para trazar la sisa." },
-  { id: "X_14_back", title: "Sisa Media Trasero (X_14_back)", formula: "X_{14\\text{, back}} = \\frac{\\text{espalda}}{2} \\times 10\\text{px}", desc: "Ancho medio de la espalda trasera para trazar la sisa." }
+interface EquationItem {
+  id: string;
+  title: string;
+  formula: string;
+  desc: string;
+  siglas: { sigla: string; significado: string }[];
+}
+
+// Math Equations Database for KaTeX Rendering (Centimeters & Acronyms with glossary)
+const EQUATIONS_DATABASE: EquationItem[] = [
+  { 
+    id: "L", 
+    title: "Ancho de Escote (L)", 
+    formula: "L = \\text{AE}", 
+    desc: "Determina el ancho horizontal inicial del cuello.",
+    siglas: [
+      { sigla: "AE", significado: "Ancho de Escote (cm)" }
+    ]
+  },
+  { 
+    id: "M", 
+    title: "Profundidad de Escote Delantero (M)", 
+    formula: "M = \\text{TF} - \\text{CF}", 
+    desc: "Calcula la profundidad de la caja del cuello en el delantero.",
+    siglas: [
+      { sigla: "TF", significado: "Talle Frente (cm)" },
+      { sigla: "CF", significado: "Centro Frente (cm)" }
+    ]
+  },
+  { 
+    id: "N", 
+    title: "Profundidad de Escote Trasero (N)", 
+    formula: "N = \\text{TA} - \\text{CA}", 
+    desc: "Calcula la profundidad del escote en la espalda.",
+    siglas: [
+      { sigla: "TA", significado: "Talle Atrás (cm)" },
+      { sigla: "CA", significado: "Centro Atrás (cm)" }
+    ]
+  },
+  { 
+    id: "Y_chest", 
+    title: "Línea de Sisa / Pecho (Y_pecho)", 
+    formula: "Y_{\\text{pecho}} = -(\\text{TA} - \\text{CO})", 
+    desc: "Define la altura horizontal base de la sisa y pecho en el molde.",
+    siglas: [
+      { sigla: "TA", significado: "Talle Atrás (cm)" },
+      { sigla: "CO", significado: "Costado (cm)" }
+    ]
+  },
+  { 
+    id: "Y_waist_back", 
+    title: "Altura Cintura Trasera (Y_cintura_espalda)", 
+    formula: "Y_{\\text{cintura\\_esp}} = -\\text{TA}", 
+    desc: "Nivel vertical de la cintura en la espalda.",
+    siglas: [
+      { sigla: "TA", significado: "Talle Atrás (cm)" }
+    ]
+  },
+  { 
+    id: "Y_waist_front", 
+    title: "Altura Cintura Delantera (Y_cintura_delantero)", 
+    formula: "Y_{\\text{cintura\\_del}} = -\\text{TF}", 
+    desc: "Nivel vertical de la cintura en el delantero.",
+    siglas: [
+      { sigla: "TF", significado: "Talle Frente (cm)" }
+    ]
+  },
+  { 
+    id: "waist_to_hem", 
+    title: "Faldón / Ruedo Total (W_hem)", 
+    formula: "W_{\\text{hem}} = \\text{LC} - 42.5", 
+    desc: "Largo de la camisa por debajo de la cintura base (referencia 42.5cm).",
+    siglas: [
+      { sigla: "LC", significado: "Largo Camisa (cm)" },
+      { sigla: "42.5", significado: "Altura cintura base constante (cm)" }
+    ]
+  },
+  { 
+    id: "X_7_front", 
+    title: "Hombro Caído Delantero (X_7_front)", 
+    formula: "X_{7\\text{, front}} = L + \\sqrt{\\text{HO}^2 - \\text{CH}_{\\text{front}}^2}", 
+    desc: "Punto de hombro delantero usando teorema de Pitágoras para conservar la longitud exacta.",
+    siglas: [
+      { sigla: "L", significado: "Ancho de Escote (cm)" },
+      { sigla: "HO", significado: "Largo Hombro (cm)" },
+      { sigla: "CH_{front}", significado: "Caída Hombro Delantero (cm)" }
+    ]
+  },
+  { 
+    id: "X_7_back", 
+    title: "Hombro Caído Trasero (X_7_back)", 
+    formula: "X_{7\\text{, back}} = L + \\sqrt{\\text{HO}^2 - \\text{CH}_{\\text{back}}^2}", 
+    desc: "Punto de hombro trasero conservando la longitud exacta mediante hipotenusa.",
+    siglas: [
+      { sigla: "L", significado: "Ancho de Escote (cm)" },
+      { sigla: "HO", significado: "Largo Hombro (cm)" },
+      { sigla: "CH_{back}", significado: "Caída Hombro Trasero (cm)" }
+    ]
+  },
+  { 
+    id: "X_14_front", 
+    title: "Sisa Media Delantero (X_14_front)", 
+    formula: "X_{14\\text{, front}} = \\frac{\\text{APe}}{2}", 
+    desc: "Ancho de pecho delantero dividido entre dos.",
+    siglas: [
+      { sigla: "APe", significado: "Ancho de Pecho (cm)" }
+    ]
+  },
+  { 
+    id: "X_14_back", 
+    title: "Sisa Media Trasero (X_14_back)", 
+    formula: "X_{14\\text{, back}} = \\frac{\\text{AEs}}{2}", 
+    desc: "Ancho de espalda trasera dividido entre dos.",
+    siglas: [
+      { sigla: "AEs", significado: "Ancho de Espalda (cm)" }
+    ]
+  }
 ];
 
 // KaTeX Safe Component
@@ -136,7 +241,6 @@ export default function Home() {
   const [lightMode, setLightMode] = useState<boolean>(false);
   const [showTable, setShowTable] = useState<boolean>(false);
   const [showEquationsPanel, setShowEquationsPanel] = useState<boolean>(false);
-  const [equationSearch, setEquationSearch] = useState<string>("");
 
   // Grid Property Base variables
   const [userBase, setUserBase] = useState<Record<string, number>>({ ...BASE_PRESETS });
@@ -311,14 +415,7 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Filtered Equations list
-  const filteredEquations = useMemo(() => {
-    if (!equationSearch.trim()) return EQUATIONS_DATABASE;
-    const query = equationSearch.toLowerCase();
-    return EQUATIONS_DATABASE.filter(
-      eq => eq.title.toLowerCase().includes(query) || eq.desc.toLowerCase().includes(query)
-    );
-  }, [equationSearch]);
+
 
   // Export current SVG to vector file
   const exportSvg = () => {
@@ -781,48 +878,43 @@ export default function Home() {
             /* TECHNICAL EQUATIONS DICTIONARY PANEL */
             <div className="space-y-4">
               <div className="section-card bg-[var(--bg-card)] border border-[var(--border-light)] rounded-lg p-3">
-                <div className="section-title text-[11px] font-bold uppercase tracking-wider mb-2.5 pb-1 border-l-2 border-amber-500 pl-2">
+                <div className="section-title text-[11px] font-bold uppercase tracking-wider mb-1.5 pb-1 border-l-2 border-amber-500 pl-2">
                   Ecuaciones de Patronaje CAD
                 </div>
-                
-                {/* Search box inside math sheet */}
-                <div className="relative flex items-center mb-3">
-                  <Search className="w-3.5 h-3.5 absolute left-2 text-zinc-500" />
-                  <input
-                    type="text"
-                    placeholder="Buscar fórmula (ej. escote, hombro)..."
-                    value={equationSearch}
-                    onChange={(e) => setEquationSearch(e.target.value)}
-                    className="w-full bg-black/20 border border-[var(--border-light)] rounded pl-8 pr-2 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-amber-500"
-                  />
-                  {equationSearch && (
-                    <button onClick={() => setEquationSearch("")} className="absolute right-2 text-zinc-500 hover:text-white">
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-
                 <p className="text-[10px] text-zinc-500 leading-relaxed">
-                  Las ecuaciones del patrón se renderizan dinámicamente aplicando KaTeX según tus variables activas.
+                  Las ecuaciones del patrón se renderizan dinámicamente aplicando KaTeX en centímetros (cm) según tus variables activas.
                 </p>
               </div>
 
-              {/* Rendered formulas */}
+              {/* Rendered formulas with acronym glossary underneath */}
               <div className="space-y-3">
-                {filteredEquations.map(eq => (
-                  <div key={eq.id} className="bg-black/10 border border-[var(--border-light)] rounded p-2.5 space-y-1.5">
-                    <h4 className="text-xs font-bold text-sky-400">{eq.title}</h4>
-                    <div className="p-2 bg-black/30 border border-white/5 rounded flex justify-center text-zinc-200 overflow-x-auto text-[11px]">
+                {EQUATIONS_DATABASE.map(eq => (
+                  <div key={eq.id} className="bg-zinc-50 dark:bg-black/10 border border-[var(--border-light)] rounded p-3 space-y-2.5 shadow-sm">
+                    <h4 className="text-xs font-bold text-sky-700 dark:text-sky-400">{eq.title}</h4>
+                    
+                    {/* Math formula rendering box - crisp white in Day Mode, dark in Night Mode */}
+                    <div className="p-2.5 bg-white dark:bg-black/30 border border-zinc-200 dark:border-white/5 rounded flex justify-center text-zinc-800 dark:text-zinc-200 overflow-x-auto text-[11px] font-medium shadow-inner">
                       <MathTex formula={eq.formula} displayMode />
                     </div>
-                    <p className="text-[10px] text-zinc-500 leading-tight">{eq.desc}</p>
+                    
+                    <p className="text-[10px] text-zinc-600 dark:text-zinc-400 leading-tight font-medium">{eq.desc}</p>
+                    
+                    {/* Acronym Glossary list below each card */}
+                    {eq.siglas && eq.siglas.length > 0 && (
+                      <div className="pt-2 border-t border-[var(--border-light)]">
+                        <span className="text-[8.5px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block mb-1">Glosario de Siglas:</span>
+                        <div className="grid grid-cols-1 gap-1 pl-1">
+                          {eq.siglas.map((s, idx) => (
+                            <div key={idx} className="flex items-start gap-1.5 text-[9.5px]">
+                              <span className="font-mono font-bold text-amber-600 dark:text-amber-400">{s.sigla}:</span>
+                              <span className="text-zinc-500 dark:text-zinc-400">{s.significado}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
-                {filteredEquations.length === 0 && (
-                  <div className="text-center py-8 text-zinc-600 text-xs">
-                    Ninguna ecuación coincide con tu búsqueda.
-                  </div>
-                )}
               </div>
             </div>
           )}
