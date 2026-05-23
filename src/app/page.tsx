@@ -242,7 +242,7 @@ export default function Home() {
   const [hoverToShowLabels, setHoverToShowLabels] = useState<boolean>(true);
   const [lightMode, setLightMode] = useState<boolean>(false);
   const [showTable, setShowTable] = useState<boolean>(false);
-  const [showEquationsPanel, setShowEquationsPanel] = useState<boolean>(false);
+  const [showEquationsModal, setShowEquationsModal] = useState<boolean>(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState<boolean>(false);
 
   // Grid Property Base variables
@@ -580,29 +580,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Sidebar Tabs Selectors */}
-        <div className={`flex border-b border-[var(--border-light)] p-1 transition-colors ${lightMode ? "bg-zinc-100/80" : "bg-black/10"}`}>
-          <button 
-            className={`flex-1 py-2 text-xs font-bold rounded transition-all flex items-center justify-center gap-1.5 ${!showEquationsPanel ? "bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm border border-[var(--border-light)]" : `text-[var(--text-secondary)] ${lightMode ? "hover:text-zinc-900 hover:bg-zinc-200/50" : "hover:text-white hover:bg-white/5"}`}`}
-            onClick={() => setShowEquationsPanel(false)}
-          >
-            <Sliders className="w-3.5 h-3.5" />
-            Propiedades CAD
-          </button>
-          <button 
-            className={`flex-1 py-2 text-xs font-bold rounded transition-all flex items-center justify-center gap-1.5 ${showEquationsPanel ? "bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm border border-[var(--border-light)]" : `text-[var(--text-secondary)] ${lightMode ? "hover:text-zinc-900 hover:bg-zinc-200/50" : "hover:text-white hover:bg-white/5"}`}`}
-            onClick={() => setShowEquationsPanel(true)}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            Ecuaciones CAD
-          </button>
-        </div>
-
         {/* Sidebar Scrollable Content */}
         <div className="sidebar-content flex-1 overflow-y-auto p-4 space-y-4">
-          
-          {!showEquationsPanel ? (
-            <>
               {/* SECTION 1: ACTIVE BASE SIZE */}
               <div className="section-card bg-[var(--bg-card)] border border-[var(--border-light)] rounded-lg p-3">
                 <div className="section-title text-[11px] font-bold uppercase tracking-wider mb-2.5 pb-1 border-l-2 border-[var(--brand-primary)] pl-2">
@@ -815,53 +794,6 @@ export default function Home() {
               </div>
 
 
-            </>
-          ) : (
-            /* TECHNICAL EQUATIONS DICTIONARY PANEL */
-            <div className="space-y-4">
-              <div className="section-card bg-[var(--bg-card)] border border-[var(--border-light)] rounded-lg p-3">
-                <div className="section-title text-[11px] font-bold uppercase tracking-wider mb-1.5 pb-1 border-l-2 border-amber-500 pl-2">
-                  Ecuaciones de Patronaje CAD
-                </div>
-                <p className="text-[10px] text-zinc-500 leading-relaxed">
-                  Las ecuaciones del patrón se renderizan dinámicamente aplicando KaTeX en centímetros (cm) según tus variables activas.
-                </p>
-              </div>
-
-              {/* Rendered formulas with acronym glossary underneath */}
-              <div className="space-y-3">
-                {EQUATIONS_DATABASE.map(eq => (
-                  <div key={eq.id} className={`border border-[var(--border-light)] rounded p-3 space-y-2.5 shadow-sm transition-colors ${lightMode ? "bg-[#f8fafc] text-zinc-800" : "bg-black/10 text-zinc-100"}`}>
-                    <h4 className={`text-xs font-bold transition-colors ${lightMode ? "text-[var(--brand-primary)]" : "text-sky-400"}`}>{eq.title}</h4>
-                    
-                    {/* Math formula rendering box - crisp white in Day Mode, dark in Night Mode */}
-                    <div className={`p-2.5 border rounded flex justify-center overflow-x-auto text-[11px] font-medium shadow-inner transition-colors ${lightMode ? "bg-white border-zinc-200 text-zinc-900" : "bg-black/30 border-white/5 text-zinc-200"}`}>
-                      <MathTex formula={eq.formula} displayMode />
-                    </div>
-                    
-                    <p className={`text-[10px] leading-tight font-medium transition-colors ${lightMode ? "text-zinc-600" : "text-zinc-400"}`}>{eq.desc}</p>
-                    
-                    {/* Acronym Glossary list below each card */}
-                    {eq.siglas && eq.siglas.length > 0 && (
-                      <div className="pt-2 border-t border-[var(--border-light)]">
-                        <span className={`text-[8.5px] font-bold uppercase tracking-wider block mb-1 transition-colors ${lightMode ? "text-zinc-400" : "text-zinc-500"}`}>Glosario de Siglas:</span>
-                        <div className="grid grid-cols-1 gap-1 pl-1">
-                          {eq.siglas.map((s, idx) => (
-                            <div key={idx} className="flex items-start gap-1.5 text-[9.5px]">
-                              <span className={`font-mono font-bold transition-colors ${lightMode ? "text-amber-700" : "text-amber-400"}`}>{s.sigla}:</span>
-                              <span className={`transition-colors ${lightMode ? "text-zinc-500" : "text-zinc-400"}`}>{s.significado}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-
 
         </div>
       </aside>
@@ -877,8 +809,8 @@ export default function Home() {
         style={{ touchAction: "none" }}
       >
         
-        {/* Floating Toolbar */}
-        <div className="toolbar tech-ui-layer absolute top-4 right-4 bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-lg p-1.5 flex items-center gap-2 shadow-2xl z-20 transition-colors duration-200">
+        {/* Floating Toolbar centered at the top */}
+        <div className="toolbar tech-ui-layer absolute top-4 left-1/2 -translate-x-1/2 bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-lg p-1.5 flex items-center gap-2 shadow-2xl z-20 transition-colors duration-200 w-max max-w-[90vw]">
           <div className="view-mode-tabs flex bg-[var(--bg-base)] p-0.5 rounded border border-[var(--border-light)]">
             <button 
               onClick={() => setViewMode("single")}
@@ -903,6 +835,16 @@ export default function Home() {
           >
             <Table className="w-3.5 h-3.5 text-zinc-400" />
             Tabla de Tallas
+          </button>
+
+          {/* Equations CAD modal toggle */}
+          <button 
+            onClick={() => setShowEquationsModal(true)}
+            className={`px-3 py-1 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-light)] rounded text-xs font-bold transition-all flex items-center gap-1.5 ${lightMode ? "hover:bg-zinc-200 text-zinc-800" : "hover:text-white hover:bg-white/5"}`}
+            title="Ecuaciones de Patronaje CAD"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-zinc-400" />
+            Ecuaciones CAD
           </button>
 
           {/* Export SVG button in canvas */}
@@ -1353,6 +1295,61 @@ export default function Home() {
           </table>
         </div>
       </div>
+
+      {/* Equations Database Modal Overlay */}
+      {showEquationsModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 flex items-center justify-center p-6 transition-all duration-300">
+          <div className={`w-full max-w-4xl h-[85vh] flex flex-col rounded-xl border border-[var(--border-light)] shadow-2xl overflow-hidden transition-all bg-[var(--bg-surface)]`}>
+            {/* Header */}
+            <div className="p-4 border-b border-[var(--border-light)] flex items-center justify-between bg-black/5">
+              <div>
+                <h2 className="text-base font-bold flex items-center gap-2 text-[var(--text-primary)]">
+                  <BookOpen className="w-4 h-4 text-[var(--brand-primary)]" />
+                  Ecuaciones de Patronaje CAD (KaTeX)
+                </h2>
+                <p className="text-[10px] text-zinc-500 mt-0.5">Fórmulas matemáticas dinámicas basadas en las variables e incrementos de escalado activo.</p>
+              </div>
+              <button 
+                onClick={() => setShowEquationsModal(false)}
+                className="w-8 h-8 rounded-full border border-[var(--border-light)] bg-[var(--bg-card)] flex items-center justify-center text-[var(--text-secondary)] hover:text-red-400 hover:border-red-400/40 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Scrollable grid of equations */}
+            <div className="flex-1 overflow-y-auto p-5 bg-[var(--bg-base)] grid grid-cols-1 md:grid-cols-2 gap-4">
+              {EQUATIONS_DATABASE.map(eq => (
+                <div key={eq.id} className={`border border-[var(--border-light)] rounded-lg p-3.5 space-y-2.5 shadow-sm transition-colors ${lightMode ? "bg-[#f8fafc] text-zinc-800" : "bg-black/10 text-zinc-100"}`}>
+                  <h4 className={`text-xs font-bold transition-colors ${lightMode ? "text-[var(--brand-primary)]" : "text-sky-400"}`}>{eq.title}</h4>
+                  
+                  {/* Math formula rendering box - crisp white in Day Mode, dark in Night Mode */}
+                  <div className={`p-2.5 border rounded flex justify-center overflow-x-auto text-[11px] font-medium shadow-inner transition-colors ${lightMode ? "bg-white border-zinc-200 text-zinc-900" : "bg-black/30 border-white/5 text-zinc-200"}`}>
+                    <MathTex formula={eq.formula} displayMode />
+                  </div>
+                  
+                  <p className={`text-[10px] leading-tight font-medium transition-colors ${lightMode ? "text-zinc-600" : "text-zinc-400"}`}>{eq.desc}</p>
+                  
+                  {/* Acronym Glossary list below each card */}
+                  {eq.siglas && eq.siglas.length > 0 && (
+                    <div className="pt-2 border-t border-[var(--border-light)]">
+                      <span className={`text-[8.5px] font-bold uppercase tracking-wider block mb-1 transition-colors ${lightMode ? "text-zinc-400" : "text-zinc-500"}`}>Glosario de Siglas:</span>
+                      <div className="grid grid-cols-1 gap-1 pl-1">
+                        {eq.siglas.map((s, idx) => (
+                          <div key={idx} className="flex items-start gap-1.5 text-[9.5px]">
+                            <span className={`font-mono font-bold transition-colors ${lightMode ? "text-amber-700" : "text-amber-400"}`}>{s.sigla}:</span>
+                            <span className={`transition-colors ${lightMode ? "text-zinc-500" : "text-zinc-400"}`}>{s.significado}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
