@@ -1,43 +1,36 @@
-# Shirt Pattern Grader CAD 🧵👔
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-A high-precision, technical CAD/Illustrator-style standalone drafting and grading application for garment design. It drafts and grades front and back shirt patterns in real-time using dynamic SVG vectors and a fully editable industrial grading spreadsheet matrix.
+## Getting Started
 
-![Aesthetic Dark Mode](docs/03.jpeg)
+First, run the development server:
 
-## Features 🚀
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-- **AutoCAD/Illustrator-Style UI**: Flat, solid technical property panels, coordinate axis rulers, and crisp, razor-sharp vector lines (Cyan for Front, Magenta for Back).
-- **Fully Editable Sizing Table**: A seamless, spreadsheet-like interactive matrix grid where modifying any size cell recalculates and updates the entire grading model in real-time.
-- **Dynamic Dual Viewports**:
-  - *Individual Mode*: Focus on drafting a single specific sizing.
-  - *Nested Mode*: Displays the complete graded size nest (Sizes 6 to 18) simultaneously using color-coded vectors for each sizing tier.
-- **Adaptive Day & Night Theme Toggler**: Toggle between a dark AutoCAD charcoal drafting theme and a clean, high-contrast white Illustrator artboard layout.
-- **Interactive SVG Viewport**: Supports dragging (pan), mouse wheel scrolling (zoom), and rapid view fitting (`F` shortcut) with high-density markers and technical annotations.
-- **Advanced Export Utilities**: Single-click high-resolution vectorial SVG export and physical printable template generation.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Technical Math & Coordinate Translation 📐
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-The engine calculates 15 anatomical landmark points based on non-linear industrial deltas relative to the standard Base 10 sizing chart. Coordinate translation compensates for SVG screen coordinate space (origin at top-left) and maps it to typical technical drafting coordinate space (positive Y-axis goes up) with a scale multiplier of `1cm = 10px` for high detail.
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Setup & Local Execution 💻
+## Learn More
 
-Since the application is fully self-contained in a single, high-performance HTML/JS file with **zero third-party dependencies**, you can run it directly:
+To learn more about Next.js, take a look at the following resources:
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/JulianDM1995/shirt-pattern-grader-cad.git
-   cd shirt-pattern-grader-cad
-   ```
-2. Open `index.html` in any modern web browser, or use a local dev server:
-   ```bash
-   # If you have Python installed
-   python3 -m http.server 8000
-   ```
-3. Access it at `http://localhost:8000`.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-## Controls & Shortcuts ⌨️
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-- **Pan/Drag**: Click and drag on the canvas with the mouse pointer.
-- **Zoom**: Use the mouse wheel or double-click to focus, or use the toolbar zoom buttons.
-- **Fit Viewport**: Press `F` on your keyboard to instantly center and fit the entire drafting system.
-- **Physical Output**: Press `Ctrl + P` / `Cmd + P` or click *Imprimir Molde Físico* to print a physical outline template.
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
