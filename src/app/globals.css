@@ -30,15 +30,20 @@
   --color-14: #8b5cf6;
   --color-16: #a855f7;
   --color-18: #f43f5e;
+
+  /* Equations Card Styles */
+  --eq-card-bg: rgba(255, 255, 255, 0.02);
+  --eq-math-bg: rgba(0, 0, 0, 0.3);
+  --eq-title-color: #38bdf8; /* Sky-400 */
 }
 
 /* Day Mode (Light Theme overrides) */
 .light-mode {
-  --bg-base: #f4f4f5;         /* Crisp white artboard canvas */
-  --bg-surface: #ffffff;      /* Solid white properties panel */
+  --bg-base: #f1f5f9;         /* Crisp slate canvas background */
+  --bg-surface: #ffffff;      /* Solid white sidebar */
   --bg-surface-opaque: #fafafa;
-  --bg-card: #eaeaea;         /* Compact panels */
-  --border-light: #d4d4d8;    /* Zinc-300 clean dividers */
+  --bg-card: #f8fafc;         /* Crisp soft white cards inside sidebar */
+  --border-light: #e2e8f0;    /* Slate-200 clean dividers */
   
   --text-primary: #18181b;    /* Charcoal dark texts */
   --text-secondary: #52525b;  /* Zinc-600 secondary texts */
@@ -48,9 +53,9 @@
   --brand-accent: #0099a6;    /* Darker cyan for light mode readability */
   --brand-secondary: #cc00cc; /* Darker magenta */
   
-  --grid-major: rgba(0, 0, 0, 0.08);
-  --grid-minor: rgba(0, 0, 0, 0.03);
-  --axis-color: rgba(0, 0, 0, 0.06);
+  --grid-major: rgba(0, 0, 0, 0.07);
+  --grid-minor: rgba(0, 0, 0, 0.02);
+  --axis-color: rgba(0, 0, 0, 0.05);
 
   /* High-contrast sizing colors for Day Mode artboard */
   --color-6: #dc2626;  /* High-contrast Red */
@@ -60,6 +65,11 @@
   --color-14: #7c3aed; /* High-contrast Purple */
   --color-16: #9333ea; /* High-contrast Violet */
   --color-18: #db2777; /* High-contrast Pink */
+
+  /* High-contrast Equations Card Styles for Day Mode */
+  --eq-card-bg: #f8fafc;
+  --eq-math-bg: #ffffff;
+  --eq-title-color: #005fa3; /* Brand Primary */
 }
 
 body {
@@ -82,4 +92,24 @@ body {
 }
 .light-mode ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.08);
+}
+
+/* Premium CAD Sidebar Input overrides for Day Mode */
+.sidebar-content input {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+.light-mode .sidebar-content input {
+  background-color: #f1f5f9 !important;
+  color: #18181b !important;
+  border-color: #e2e8f0 !important;
+}
+.light-mode .sidebar-content input:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+.light-mode .sidebar-content input:focus {
+  background-color: #ffffff !important;
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 2px rgba(0, 95, 163, 0.1) !important;
 }

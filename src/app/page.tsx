@@ -20,7 +20,9 @@ import {
   HelpCircle,
   Sliders,
   Settings,
-  X
+  X,
+  Plus,
+  Minus
 } from "lucide-react";
 
 // Standard baseline presets for size 10 (Highlighted Base)
@@ -241,6 +243,7 @@ export default function Home() {
   const [lightMode, setLightMode] = useState<boolean>(false);
   const [showTable, setShowTable] = useState<boolean>(false);
   const [showEquationsPanel, setShowEquationsPanel] = useState<boolean>(false);
+  const [showSettingsDropdown, setShowSettingsDropdown] = useState<boolean>(false);
 
   // Grid Property Base variables
   const [userBase, setUserBase] = useState<Record<string, number>>({ ...BASE_PRESETS });
@@ -286,6 +289,17 @@ export default function Home() {
       }
     });
     return measurements;
+  };
+
+  // Helper to update active size measurement and back-calculate baseline (Size 10) values
+  const handleActiveMeasurementChange = (id: string, newVal: number) => {
+    const deltaArr = GRADING_DELTAS[id];
+    const sizeIdx = SIZE_INDEX[currentSize] ?? 0;
+    const baseVal = newVal - deltaArr[sizeIdx + 2];
+    setUserBase(prev => ({
+      ...prev,
+      [id]: baseVal
+    }));
   };
 
   // SVG Point generator using pattern equations
@@ -547,10 +561,10 @@ export default function Home() {
   const frontPointsIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
 
   return (
-    <div className={`flex h-screen w-screen overflow-hidden text-sm transition-colors duration-200 ${lightMode ? "light-mode bg-zinc-100" : "bg-[#141416] text-zinc-100"}`}>
+    <div className={`flex flex-row-reverse h-screen w-screen overflow-hidden text-sm transition-colors duration-200 ${lightMode ? "light-mode bg-zinc-100" : "bg-[#141416] text-zinc-100"}`}>
       
       {/* SIDEBAR PROPERTY CONTROL PANEL */}
-      <aside className={`sidebar w-[360px] flex flex-col h-full z-10 border-r border-[var(--border-light)] ${lightMode ? "bg-white" : "bg-[#1e1e20]"}`}>
+      <aside className={`sidebar w-[360px] flex flex-col h-full z-10 border-l border-[var(--border-light)] ${lightMode ? "bg-white" : "bg-[#1e1e20]"}`}>
         
         {/* Compact Tech Header */}
         <div className="brand-header p-4 border-b border-[var(--border-light)] flex items-center gap-3">
@@ -567,16 +581,16 @@ export default function Home() {
         </div>
 
         {/* Sidebar Tabs Selectors */}
-        <div className="flex border-b border-[var(--border-light)] p-1 bg-black/10">
+        <div className={`flex border-b border-[var(--border-light)] p-1 transition-colors ${lightMode ? "bg-zinc-100/80" : "bg-black/10"}`}>
           <button 
-            className={`flex-1 py-2 text-xs font-bold rounded transition-all flex items-center justify-center gap-1.5 ${!showEquationsPanel ? "bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm" : "text-[var(--text-secondary)] hover:text-white"}`}
+            className={`flex-1 py-2 text-xs font-bold rounded transition-all flex items-center justify-center gap-1.5 ${!showEquationsPanel ? "bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm border border-[var(--border-light)]" : `text-[var(--text-secondary)] ${lightMode ? "hover:text-zinc-900 hover:bg-zinc-200/50" : "hover:text-white hover:bg-white/5"}`}`}
             onClick={() => setShowEquationsPanel(false)}
           >
             <Sliders className="w-3.5 h-3.5" />
             Propiedades CAD
           </button>
           <button 
-            className={`flex-1 py-2 text-xs font-bold rounded transition-all flex items-center justify-center gap-1.5 ${showEquationsPanel ? "bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm" : "text-[var(--text-secondary)] hover:text-white"}`}
+            className={`flex-1 py-2 text-xs font-bold rounded transition-all flex items-center justify-center gap-1.5 ${showEquationsPanel ? "bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm border border-[var(--border-light)]" : `text-[var(--text-secondary)] ${lightMode ? "hover:text-zinc-900 hover:bg-zinc-200/50" : "hover:text-white hover:bg-white/5"}`}`}
             onClick={() => setShowEquationsPanel(true)}
           >
             <BookOpen className="w-3.5 h-3.5" />
@@ -591,17 +605,11 @@ export default function Home() {
             <>
               {/* SECTION 1: ACTIVE BASE SIZE */}
               <div className="section-card bg-[var(--bg-card)] border border-[var(--border-light)] rounded-lg p-3">
-                <div className="section-title text-[11px] font-bold uppercase tracking-wider mb-2.5 pb-1 border-l-2 border-[var(--brand-primary)] pl-2 flex items-center justify-between">
-                  <span>1. Talla Base Activa</span>
-                  <button 
-                    className="text-[10px] text-[var(--brand-primary)] underline hover:text-sky-400"
-                    onClick={() => setUserBase({ ...BASE_PRESETS })}
-                  >
-                    Restablecer 10
-                  </button>
+                <div className="section-title text-[11px] font-bold uppercase tracking-wider mb-2.5 pb-1 border-l-2 border-[var(--brand-primary)] pl-2">
+                  1. Talla Activa
                 </div>
                 
-                <div className="grid grid-cols-7 gap-1 bg-black/20 p-1 rounded-md border border-[var(--border-light)]">
+                <div className={`grid grid-cols-7 gap-1 p-1 rounded-md border border-[var(--border-light)] transition-colors ${lightMode ? "bg-zinc-100" : "bg-black/20"}`}>
                   {nestedSizings.map(size => {
                     const isActive = currentSize === size;
                     return (
@@ -610,9 +618,10 @@ export default function Home() {
                         onClick={() => setCurrentSize(size)}
                         className={`py-1.5 text-xs font-bold font-mono rounded transition-all ${
                           isActive 
-                            ? `text-white bg-[var(--color-${size})] ${size === '10' && 'text-black font-extrabold'}` 
-                            : 'text-[var(--text-secondary)] hover:text-white hover:bg-white/5'
+                            ? `text-white ${size === '10' && (lightMode ? 'text-white font-extrabold' : 'text-black font-extrabold')}` 
+                            : `text-[var(--text-secondary)] ${lightMode ? 'hover:bg-zinc-200 hover:text-zinc-900' : 'hover:bg-white/5 hover:text-white'}`
                         }`}
+                        style={{ backgroundColor: isActive ? `var(--color-${size})` : undefined }}
                       >
                         {size}
                       </button>
@@ -624,7 +633,7 @@ export default function Home() {
               {/* SECTION 2: CONTORNOS */}
               <div className="section-card bg-[var(--bg-card)] border border-[var(--border-light)] rounded-lg p-3">
                 <div className="section-title text-[11px] font-bold uppercase tracking-wider mb-2.5 pb-1 border-l-2 border-[var(--brand-primary)] pl-2">
-                  2. Contornos (Base Talla 10)
+                  2. Contornos (Talla {currentSize})
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col gap-1">
@@ -632,8 +641,8 @@ export default function Home() {
                     <div className="relative flex items-center">
                       <input 
                         type="number" 
-                        value={userBase.busto} 
-                        onChange={(e) => setUserBase({ ...userBase, busto: parseFloat(e.target.value) || 0 })}
+                        value={mActive.busto} 
+                        onChange={(e) => handleActiveMeasurementChange("busto", parseFloat(e.target.value) || 0)}
                         className="w-full bg-black/30 border border-[var(--border-light)] rounded px-2 py-1.5 pr-7 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
                       />
                       <span className="absolute right-2 text-[10px] text-zinc-500 font-mono">cm</span>
@@ -644,8 +653,8 @@ export default function Home() {
                     <div className="relative flex items-center">
                       <input 
                         type="number" 
-                        value={userBase.cintura} 
-                        onChange={(e) => setUserBase({ ...userBase, cintura: parseFloat(e.target.value) || 0 })}
+                        value={mActive.cintura} 
+                        onChange={(e) => handleActiveMeasurementChange("cintura", parseFloat(e.target.value) || 0)}
                         className="w-full bg-black/30 border border-[var(--border-light)] rounded px-2 py-1.5 pr-7 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
                       />
                       <span className="absolute right-2 text-[10px] text-zinc-500 font-mono">cm</span>
@@ -656,8 +665,8 @@ export default function Home() {
                     <div className="relative flex items-center">
                       <input 
                         type="number" 
-                        value={userBase.cadera} 
-                        onChange={(e) => setUserBase({ ...userBase, cadera: parseFloat(e.target.value) || 0 })}
+                        value={mActive.cadera} 
+                        onChange={(e) => handleActiveMeasurementChange("cadera", parseFloat(e.target.value) || 0)}
                         className="w-full bg-black/30 border border-[var(--border-light)] rounded px-2 py-1.5 pr-7 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
                       />
                       <span className="absolute right-2 text-[10px] text-zinc-500 font-mono">cm</span>
@@ -669,7 +678,7 @@ export default function Home() {
               {/* SECTION 3: ANCHOS Y HOMBROS */}
               <div className="section-card bg-[var(--bg-card)] border border-[var(--border-light)] rounded-lg p-3">
                 <div className="section-title text-[11px] font-bold uppercase tracking-wider mb-2.5 pb-1 border-l-2 border-[var(--brand-primary)] pl-2">
-                  3. Anchos y Hombros
+                  3. Anchos y Hombros (Talla {currentSize})
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col gap-1">
@@ -677,8 +686,8 @@ export default function Home() {
                     <div className="relative flex items-center">
                       <input 
                         type="number" 
-                        value={userBase.espalda} 
-                        onChange={(e) => setUserBase({ ...userBase, espalda: parseFloat(e.target.value) || 0 })}
+                        value={mActive.espalda} 
+                        onChange={(e) => handleActiveMeasurementChange("espalda", parseFloat(e.target.value) || 0)}
                         className="w-full bg-black/30 border border-[var(--border-light)] rounded px-2 py-1.5 pr-7 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
                       />
                       <span className="absolute right-2 text-[10px] text-zinc-500 font-mono">cm</span>
@@ -689,8 +698,8 @@ export default function Home() {
                     <div className="relative flex items-center">
                       <input 
                         type="number" 
-                        value={userBase.pecho} 
-                        onChange={(e) => setUserBase({ ...userBase, pecho: parseFloat(e.target.value) || 0 })}
+                        value={mActive.pecho} 
+                        onChange={(e) => handleActiveMeasurementChange("pecho", parseFloat(e.target.value) || 0)}
                         className="w-full bg-black/30 border border-[var(--border-light)] rounded px-2 py-1.5 pr-7 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
                       />
                       <span className="absolute right-2 text-[10px] text-zinc-500 font-mono">cm</span>
@@ -701,8 +710,8 @@ export default function Home() {
                     <div className="relative flex items-center">
                       <input 
                         type="number" 
-                        value={userBase.hombro} 
-                        onChange={(e) => setUserBase({ ...userBase, hombro: parseFloat(e.target.value) || 0 })}
+                        value={mActive.hombro} 
+                        onChange={(e) => handleActiveMeasurementChange("hombro", parseFloat(e.target.value) || 0)}
                         className="w-full bg-black/30 border border-[var(--border-light)] rounded px-2 py-1.5 pr-7 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
                       />
                       <span className="absolute right-2 text-[10px] text-zinc-500 font-mono">cm</span>
@@ -714,8 +723,8 @@ export default function Home() {
                       <input 
                         type="number" 
                         step="0.1"
-                        value={userBase.ancho_escote} 
-                        onChange={(e) => setUserBase({ ...userBase, ancho_escote: parseFloat(e.target.value) || 0 })}
+                        value={mActive.ancho_escote} 
+                        onChange={(e) => handleActiveMeasurementChange("ancho_escote", parseFloat(e.target.value) || 0)}
                         className="w-full bg-black/30 border border-[var(--border-light)] rounded px-2 py-1.5 pr-7 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
                       />
                       <span className="absolute right-2 text-[10px] text-zinc-500 font-mono">cm</span>
@@ -727,7 +736,7 @@ export default function Home() {
               {/* SECTION 4: ALTURAS Y TALLES */}
               <div className="section-card bg-[var(--bg-card)] border border-[var(--border-light)] rounded-lg p-3">
                 <div className="section-title text-[11px] font-bold uppercase tracking-wider mb-2.5 pb-1 border-l-2 border-[var(--brand-primary)] pl-2">
-                  4. Alturas y Talles
+                  4. Alturas y Talles (Talla {currentSize})
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col gap-1">
@@ -735,8 +744,8 @@ export default function Home() {
                     <div className="relative flex items-center">
                       <input 
                         type="number" 
-                        value={userBase.talle_frente} 
-                        onChange={(e) => setUserBase({ ...userBase, talle_frente: parseFloat(e.target.value) || 0 })}
+                        value={mActive.talle_frente} 
+                        onChange={(e) => handleActiveMeasurementChange("talle_frente", parseFloat(e.target.value) || 0)}
                         className="w-full bg-black/30 border border-[var(--border-light)] rounded px-2 py-1.5 pr-7 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
                       />
                       <span className="absolute right-2 text-[10px] text-zinc-500 font-mono">cm</span>
@@ -747,8 +756,8 @@ export default function Home() {
                     <div className="relative flex items-center">
                       <input 
                         type="number" 
-                        value={userBase.talle_atras} 
-                        onChange={(e) => setUserBase({ ...userBase, talle_atras: parseFloat(e.target.value) || 0 })}
+                        value={mActive.talle_atras} 
+                        onChange={(e) => handleActiveMeasurementChange("talle_atras", parseFloat(e.target.value) || 0)}
                         className="w-full bg-black/30 border border-[var(--border-light)] rounded px-2 py-1.5 pr-7 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
                       />
                       <span className="absolute right-2 text-[10px] text-zinc-500 font-mono">cm</span>
@@ -759,8 +768,8 @@ export default function Home() {
                     <div className="relative flex items-center">
                       <input 
                         type="number" 
-                        value={userBase.centro_frente} 
-                        onChange={(e) => setUserBase({ ...userBase, centro_frente: parseFloat(e.target.value) || 0 })}
+                        value={mActive.centro_frente} 
+                        onChange={(e) => handleActiveMeasurementChange("centro_frente", parseFloat(e.target.value) || 0)}
                         className="w-full bg-black/30 border border-[var(--border-light)] rounded px-2 py-1.5 pr-7 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
                       />
                       <span className="absolute right-2 text-[10px] text-zinc-500 font-mono">cm</span>
@@ -771,8 +780,8 @@ export default function Home() {
                     <div className="relative flex items-center">
                       <input 
                         type="number" 
-                        value={userBase.centro_atras} 
-                        onChange={(e) => setUserBase({ ...userBase, centro_atras: parseFloat(e.target.value) || 0 })}
+                        value={mActive.centro_atras} 
+                        onChange={(e) => handleActiveMeasurementChange("centro_atras", parseFloat(e.target.value) || 0)}
                         className="w-full bg-black/30 border border-[var(--border-light)] rounded px-2 py-1.5 pr-7 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
                       />
                       <span className="absolute right-2 text-[10px] text-zinc-500 font-mono">cm</span>
@@ -783,8 +792,8 @@ export default function Home() {
                     <div className="relative flex items-center">
                       <input 
                         type="number" 
-                        value={userBase.costado} 
-                        onChange={(e) => setUserBase({ ...userBase, costado: parseFloat(e.target.value) || 0 })}
+                        value={mActive.costado} 
+                        onChange={(e) => handleActiveMeasurementChange("costado", parseFloat(e.target.value) || 0)}
                         className="w-full bg-black/30 border border-[var(--border-light)] rounded px-2 py-1.5 pr-7 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
                       />
                       <span className="absolute right-2 text-[10px] text-zinc-500 font-mono">cm</span>
@@ -795,8 +804,8 @@ export default function Home() {
                     <div className="relative flex items-center">
                       <input 
                         type="number" 
-                        value={userBase.largo_camisa} 
-                        onChange={(e) => setUserBase({ ...userBase, largo_camisa: parseFloat(e.target.value) || 0 })}
+                        value={mActive.largo_camisa} 
+                        onChange={(e) => handleActiveMeasurementChange("largo_camisa", parseFloat(e.target.value) || 0)}
                         className="w-full bg-black/30 border border-[var(--border-light)] rounded px-2 py-1.5 pr-7 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
                       />
                       <span className="absolute right-2 text-[10px] text-zinc-500 font-mono">cm</span>
@@ -805,74 +814,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* SECTION 5: AJUSTES TECNICOS */}
-              <div className="section-card bg-[var(--bg-card)] border border-[var(--border-light)] rounded-lg p-3">
-                <div className="section-title text-[11px] font-bold uppercase tracking-wider mb-2.5 pb-1 border-l-2 border-[var(--brand-primary)] pl-2">
-                  5. Ajustes Técnicos
-                </div>
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold text-[var(--text-secondary)] flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5 text-zinc-500" />
-                      Mostrar Guías y Niveles
-                    </label>
-                    <button 
-                      onClick={() => setShowGuides(!showGuides)}
-                      className={`w-8 h-4.5 rounded-full relative transition-colors duration-200 ${showGuides ? "bg-[var(--brand-primary)]" : "bg-zinc-600"}`}
-                    >
-                      <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all duration-200 ${showGuides ? "right-0.5" : "left-0.5"}`} />
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold text-[var(--text-secondary)] flex items-center gap-1.5">
-                      <Settings className="w-3.5 h-3.5 text-zinc-500" />
-                      Mostrar Puntos Ancla (■)
-                    </label>
-                    <button 
-                      onClick={() => setShowAnchorPoints(!showAnchorPoints)}
-                      className={`w-8 h-4.5 rounded-full relative transition-colors duration-200 ${showAnchorPoints ? "bg-[var(--brand-primary)]" : "bg-zinc-600"}`}
-                    >
-                      <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all duration-200 ${showAnchorPoints ? "right-0.5" : "left-0.5"}`} />
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold text-[var(--text-secondary)] flex items-center gap-1.5">
-                      <Info className="w-3.5 h-3.5 text-zinc-500" />
-                      Mostrar Círculos de Tallas
-                    </label>
-                    <button 
-                      onClick={() => setShowLabelCircles(!showLabelCircles)}
-                      className={`w-8 h-4.5 rounded-full relative transition-colors duration-200 ${showLabelCircles ? "bg-[var(--brand-primary)]" : "bg-zinc-600"}`}
-                    >
-                      <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all duration-200 ${showLabelCircles ? "right-0.5" : "left-0.5"}`} />
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold text-[var(--text-secondary)] flex items-center gap-1.5">
-                      <HelpCircle className="w-3.5 h-3.5 text-zinc-500" />
-                      Mostrar Fórmulas Escritas
-                    </label>
-                    <button 
-                      onClick={() => setShowFormulas(!showFormulas)}
-                      className={`w-8 h-4.5 rounded-full relative transition-colors duration-200 ${showFormulas ? "bg-[var(--brand-primary)]" : "bg-zinc-600"}`}
-                    >
-                      <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all duration-200 ${showFormulas ? "right-0.5" : "left-0.5"}`} />
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold text-[var(--text-secondary)] flex items-center gap-1.5">
-                      <Eye className="w-3.5 h-3.5 text-zinc-500" />
-                      Mostrar Etiquetas al Hover
-                    </label>
-                    <button 
-                      onClick={() => setHoverToShowLabels(!hoverToShowLabels)}
-                      className={`w-8 h-4.5 rounded-full relative transition-colors duration-200 ${hoverToShowLabels ? "bg-[var(--brand-primary)]" : "bg-zinc-600"}`}
-                    >
-                      <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all duration-200 ${hoverToShowLabels ? "right-0.5" : "left-0.5"}`} />
-                    </button>
-                  </div>
-                </div>
-              </div>
+
             </>
           ) : (
             /* TECHNICAL EQUATIONS DICTIONARY PANEL */
@@ -889,25 +831,25 @@ export default function Home() {
               {/* Rendered formulas with acronym glossary underneath */}
               <div className="space-y-3">
                 {EQUATIONS_DATABASE.map(eq => (
-                  <div key={eq.id} className="bg-zinc-50 dark:bg-black/10 border border-[var(--border-light)] rounded p-3 space-y-2.5 shadow-sm">
-                    <h4 className="text-xs font-bold text-sky-700 dark:text-sky-400">{eq.title}</h4>
+                  <div key={eq.id} className={`border border-[var(--border-light)] rounded p-3 space-y-2.5 shadow-sm transition-colors ${lightMode ? "bg-[#f8fafc] text-zinc-800" : "bg-black/10 text-zinc-100"}`}>
+                    <h4 className={`text-xs font-bold transition-colors ${lightMode ? "text-[var(--brand-primary)]" : "text-sky-400"}`}>{eq.title}</h4>
                     
                     {/* Math formula rendering box - crisp white in Day Mode, dark in Night Mode */}
-                    <div className="p-2.5 bg-white dark:bg-black/30 border border-zinc-200 dark:border-white/5 rounded flex justify-center text-zinc-800 dark:text-zinc-200 overflow-x-auto text-[11px] font-medium shadow-inner">
+                    <div className={`p-2.5 border rounded flex justify-center overflow-x-auto text-[11px] font-medium shadow-inner transition-colors ${lightMode ? "bg-white border-zinc-200 text-zinc-900" : "bg-black/30 border-white/5 text-zinc-200"}`}>
                       <MathTex formula={eq.formula} displayMode />
                     </div>
                     
-                    <p className="text-[10px] text-zinc-600 dark:text-zinc-400 leading-tight font-medium">{eq.desc}</p>
+                    <p className={`text-[10px] leading-tight font-medium transition-colors ${lightMode ? "text-zinc-600" : "text-zinc-400"}`}>{eq.desc}</p>
                     
                     {/* Acronym Glossary list below each card */}
                     {eq.siglas && eq.siglas.length > 0 && (
                       <div className="pt-2 border-t border-[var(--border-light)]">
-                        <span className="text-[8.5px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block mb-1">Glosario de Siglas:</span>
+                        <span className={`text-[8.5px] font-bold uppercase tracking-wider block mb-1 transition-colors ${lightMode ? "text-zinc-400" : "text-zinc-500"}`}>Glosario de Siglas:</span>
                         <div className="grid grid-cols-1 gap-1 pl-1">
                           {eq.siglas.map((s, idx) => (
                             <div key={idx} className="flex items-start gap-1.5 text-[9.5px]">
-                              <span className="font-mono font-bold text-amber-600 dark:text-amber-400">{s.sigla}:</span>
-                              <span className="text-zinc-500 dark:text-zinc-400">{s.significado}</span>
+                              <span className={`font-mono font-bold transition-colors ${lightMode ? "text-amber-700" : "text-amber-400"}`}>{s.sigla}:</span>
+                              <span className={`transition-colors ${lightMode ? "text-zinc-500" : "text-zinc-400"}`}>{s.significado}</span>
                             </div>
                           ))}
                         </div>
@@ -919,23 +861,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* ACTION BUTTONS */}
-          <div className="action-btn-group pt-2 space-y-2">
-            <button 
-              onClick={exportSvg}
-              className="w-full btn btn-primary flex items-center justify-center gap-2 bg-[var(--brand-primary)] hover:bg-sky-600 text-white font-bold py-2 rounded text-xs border border-white/10"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              Exportar SVG Vectorial
-            </button>
-            <button 
-              onClick={printPattern}
-              className="w-full btn btn-secondary flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-[var(--text-primary)] font-bold py-2 rounded text-xs border border-[var(--border-light)]"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              Imprimir Molde Físico
-            </button>
-          </div>
+
 
         </div>
       </aside>
@@ -952,17 +878,17 @@ export default function Home() {
       >
         
         {/* Floating Toolbar */}
-        <div className="toolbar tech-ui-layer absolute top-4 right-4 bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-lg p-1.5 flex items-center gap-2 shadow-2xl z-5">
+        <div className="toolbar tech-ui-layer absolute top-4 right-4 bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-lg p-1.5 flex items-center gap-2 shadow-2xl z-20 transition-colors duration-200">
           <div className="view-mode-tabs flex bg-[var(--bg-base)] p-0.5 rounded border border-[var(--border-light)]">
             <button 
               onClick={() => setViewMode("single")}
-              className={`px-3 py-1 rounded text-xs font-bold transition-all ${viewMode === "single" ? "bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-light)]" : "text-[var(--text-secondary)] hover:text-white"}`}
+              className={`px-3 py-1 rounded text-xs font-bold transition-all ${viewMode === "single" ? "bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-light)] shadow-sm" : `text-[var(--text-secondary)] ${lightMode ? "hover:text-zinc-900 hover:bg-zinc-100/50" : "hover:text-white hover:bg-white/5"}`}`}
             >
               Talla Individual
             </button>
             <button 
               onClick={() => setViewMode("nested")}
-              className={`px-3 py-1 rounded text-xs font-bold transition-all ${viewMode === "nested" ? "bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-light)]" : "text-[var(--text-secondary)] hover:text-white"}`}
+              className={`px-3 py-1 rounded text-xs font-bold transition-all ${viewMode === "nested" ? "bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-light)] shadow-sm" : `text-[var(--text-secondary)] ${lightMode ? "hover:text-zinc-900 hover:bg-zinc-100/50" : "hover:text-white hover:bg-white/5"}`}`}
             >
               Anidado (Graduación)
             </button>
@@ -973,38 +899,179 @@ export default function Home() {
           {/* Table display toggle */}
           <button 
             onClick={() => setShowTable(true)}
-            className="px-3 py-1 bg-[var(--bg-card)] text-[var(--text-primary)] hover:text-white border border-[var(--border-light)] rounded text-xs font-bold transition-all flex items-center gap-1.5"
+            className={`px-3 py-1 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-light)] rounded text-xs font-bold transition-all flex items-center gap-1.5 ${lightMode ? "hover:bg-zinc-200 text-zinc-800" : "hover:text-white hover:bg-white/5"}`}
           >
             <Table className="w-3.5 h-3.5 text-zinc-400" />
             Tabla de Tallas
           </button>
 
+          {/* Export SVG button in canvas */}
+          <button 
+            onClick={exportSvg}
+            className={`px-3 py-1 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-light)] rounded text-xs font-bold transition-all flex items-center gap-1.5 ${lightMode ? "hover:bg-zinc-200 text-zinc-800" : "hover:text-white hover:bg-white/5"}`}
+            title="Exportar SVG Vectorial"
+          >
+            <FileDown className="w-3.5 h-3.5 text-zinc-400" />
+            Exportar SVG
+          </button>
+
+          {/* Print button in canvas */}
+          <button 
+            onClick={printPattern}
+            className={`px-3 py-1 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-light)] rounded text-xs font-bold transition-all flex items-center gap-1.5 ${lightMode ? "hover:bg-zinc-200 text-zinc-800" : "hover:text-white hover:bg-white/5"}`}
+            title="Imprimir Molde Físico"
+          >
+            <Printer className="w-3.5 h-3.5 text-zinc-400" />
+            Imprimir
+          </button>
+
           <div className="w-px h-5 bg-[var(--border-light)]" />
 
-          {/* Zoom Actions */}
-          <button onClick={() => setZoom(Math.min(zoom * 1.15, 5.0))} className="w-7 h-7 bg-[var(--bg-card)] hover:bg-white/5 rounded border border-[var(--border-light)] flex items-center justify-center text-[var(--text-secondary)] hover:text-white">
-            <Maximize className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={() => setZoom(Math.max(zoom * 0.85, 0.15))} className="w-7 h-7 bg-[var(--bg-card)] hover:bg-white/5 rounded border border-[var(--border-light)] flex items-center justify-center text-[var(--text-secondary)] hover:text-white">
-            <Minimize className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={resetViewport} className="w-7 h-7 bg-[var(--bg-card)] hover:bg-white/5 rounded border border-[var(--border-light)] flex items-center justify-center text-[var(--text-secondary)] hover:text-white" title="Fit Viewport (F)">
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
+          {/* Technical Adjustments Floating Dropdown */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
+              className={`w-7 h-7 bg-[var(--bg-card)] rounded border flex items-center justify-center transition-all ${
+                showSettingsDropdown 
+                  ? "border-[var(--brand-primary)] text-[var(--brand-primary)] bg-[var(--brand-primary)]/5" 
+                  : "border-[var(--border-light)] text-[var(--text-secondary)]"
+              } ${lightMode ? "hover:bg-zinc-200 hover:text-zinc-900" : "hover:bg-white/5 hover:text-white"}`}
+              title="Ajustes Técnicos"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+            </button>
+
+            {showSettingsDropdown && (
+              <div className={`absolute right-0 top-9 w-64 border border-[var(--border-light)] rounded-lg p-3.5 shadow-2xl z-25 space-y-3 transition-all duration-200 text-xs ${lightMode ? "bg-white text-zinc-800" : "bg-[#1e1e20] text-zinc-200"}`}>
+                <div className="font-bold text-[9px] text-zinc-400 uppercase tracking-wider mb-1.5 border-b border-[var(--border-light)] pb-1.5 flex items-center justify-between">
+                  <span>Ajustes Técnicos CAD</span>
+                  <button 
+                    onClick={() => setShowSettingsDropdown(false)}
+                    className="text-zinc-500 hover:text-red-400"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-[var(--text-secondary)] flex items-center gap-1.5 cursor-pointer">
+                      <Layers className="w-3.5 h-3.5 text-zinc-500" />
+                      Mostrar Guías y Niveles
+                    </label>
+                    <button 
+                      onClick={() => setShowGuides(!showGuides)}
+                      className={`w-8 h-4.5 rounded-full relative transition-colors duration-200 ${showGuides ? "bg-[var(--brand-primary)]" : "bg-zinc-600"}`}
+                    >
+                      <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all duration-200 ${showGuides ? "right-0.5" : "left-0.5"}`} />
+                    </button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-[var(--text-secondary)] flex items-center gap-1.5 cursor-pointer">
+                      <Settings className="w-3.5 h-3.5 text-zinc-500" />
+                      Mostrar Puntos Ancla (■)
+                    </label>
+                    <button 
+                      onClick={() => setShowAnchorPoints(!showAnchorPoints)}
+                      className={`w-8 h-4.5 rounded-full relative transition-colors duration-200 ${showAnchorPoints ? "bg-[var(--brand-primary)]" : "bg-zinc-600"}`}
+                    >
+                      <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all duration-200 ${showAnchorPoints ? "right-0.5" : "left-0.5"}`} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-[var(--text-secondary)] flex items-center gap-1.5 cursor-pointer">
+                      <Info className="w-3.5 h-3.5 text-zinc-500" />
+                      Mostrar Círculos de Tallas
+                    </label>
+                    <button 
+                      onClick={() => setShowLabelCircles(!showLabelCircles)}
+                      className={`w-8 h-4.5 rounded-full relative transition-colors duration-200 ${showLabelCircles ? "bg-[var(--brand-primary)]" : "bg-zinc-600"}`}
+                    >
+                      <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all duration-200 ${showLabelCircles ? "right-0.5" : "left-0.5"}`} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-[var(--text-secondary)] flex items-center gap-1.5 cursor-pointer">
+                      <HelpCircle className="w-3.5 h-3.5 text-zinc-500" />
+                      Mostrar Fórmulas Escritas
+                    </label>
+                    <button 
+                      onClick={() => setShowFormulas(!showFormulas)}
+                      className={`w-8 h-4.5 rounded-full relative transition-colors duration-200 ${showFormulas ? "bg-[var(--brand-primary)]" : "bg-zinc-600"}`}
+                    >
+                      <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all duration-200 ${showFormulas ? "right-0.5" : "left-0.5"}`} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-[var(--text-secondary)] flex items-center gap-1.5 cursor-pointer">
+                      <Eye className="w-3.5 h-3.5 text-zinc-500" />
+                      Mostrar Etiquetas al Hover
+                    </label>
+                    <button 
+                      onClick={() => setHoverToShowLabels(!hoverToShowLabels)}
+                      className={`w-8 h-4.5 rounded-full relative transition-colors duration-200 ${hoverToShowLabels ? "bg-[var(--brand-primary)]" : "bg-zinc-600"}`}
+                    >
+                      <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all duration-200 ${hoverToShowLabels ? "right-0.5" : "left-0.5"}`} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="w-px h-5 bg-[var(--border-light)]" />
 
           {/* Theme Toggle */}
           <button 
             onClick={() => setLightMode(!lightMode)}
-            className="w-7 h-7 bg-[var(--bg-card)] hover:bg-white/5 rounded border border-[var(--border-light)] flex items-center justify-center text-[var(--text-secondary)] hover:text-white"
+            className={`w-7 h-7 bg-[var(--bg-card)] rounded border border-[var(--border-light)] flex items-center justify-center text-[var(--text-secondary)] transition-colors ${lightMode ? "hover:bg-zinc-200 hover:text-zinc-900" : "hover:bg-white/5 hover:text-white"}`}
           >
             {lightMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
           </button>
         </div>
 
-        {/* Floating Nested legend panel */}
-        <div className={`legend-card tech-ui-layer absolute bottom-4 right-4 bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-lg p-3 shadow-2xl z-5 w-44 flex flex-col gap-2 pointer-events-auto transition-all duration-300 ${viewMode === "nested" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}>
+        {/* Floating Zoom Control Pill in the Bottom-Right Corner */}
+        <div className="zoom-controller tech-ui-layer absolute bottom-4 right-4 bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-lg p-1.5 flex items-center gap-2 shadow-2xl z-10 transition-colors duration-200">
+          {/* Zoom Out (-) */}
+          <button 
+            onClick={() => setZoom(Math.max(zoom * 0.85, 0.15))} 
+            className={`w-7 h-7 bg-[var(--bg-card)] rounded border border-[var(--border-light)] flex items-center justify-center text-[var(--text-secondary)] transition-colors ${lightMode ? "hover:bg-zinc-200 hover:text-zinc-900" : "hover:bg-white/5 hover:text-white"}`}
+            title="Alejar (-)"
+          >
+            <Minus className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Zoom level indicator badge */}
+          <span className="text-xs font-mono font-bold px-1.5 min-w-[42px] text-center text-[var(--text-primary)]">
+            {Math.round(zoom * 100)}%
+          </span>
+
+          {/* Zoom In (+) */}
+          <button 
+            onClick={() => setZoom(Math.min(zoom * 1.15, 5.0))} 
+            className={`w-7 h-7 bg-[var(--bg-card)] rounded border border-[var(--border-light)] flex items-center justify-center text-[var(--text-secondary)] transition-colors ${lightMode ? "hover:bg-zinc-200 hover:text-zinc-900" : "hover:bg-white/5 hover:text-white"}`}
+            title="Acercar (+)"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+
+          <div className="w-px h-5 bg-[var(--border-light)]" />
+
+          {/* Reset Viewport */}
+          <button 
+            onClick={resetViewport} 
+            className={`w-7 h-7 bg-[var(--bg-card)] rounded border border-[var(--border-light)] flex items-center justify-center text-[var(--text-secondary)] transition-colors ${lightMode ? "hover:bg-zinc-200 hover:text-zinc-900" : "hover:bg-white/5 hover:text-white"}`}
+            title="Ajustar Vista (F)"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Floating Nested legend panel stacked above bottom-right zoom */}
+        <div className={`legend-card tech-ui-layer absolute bottom-20 right-4 bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-lg p-3 shadow-2xl z-5 w-44 flex flex-col gap-2 pointer-events-auto transition-all duration-300 ${viewMode === "nested" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}>
           <span className="legend-title text-[9px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Patrón de Tallas</span>
           {nestedSizings.map(size => (
             <div key={size} className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
@@ -1015,7 +1082,7 @@ export default function Home() {
         </div>
 
         {/* SVG Drawing Canvas */}
-        <svg id="pattern-svg" className="w-full h-full block">
+        <svg id="pattern-svg" className="w-full h-full block bg-[var(--bg-base)] transition-colors duration-200">
           <defs>
             {/* Grid Patterns */}
             <pattern id="grid-pattern-10" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -1027,17 +1094,17 @@ export default function Home() {
             </pattern>
           </defs>
 
-          {/* Grid Background */}
-          <rect width="100%" height="100%" fill="url(#grid-pattern-50)" />
-          
-          {/* Axis Center Cross */}
-          <g stroke="var(--axis-color)" strokeWidth="0.8">
-            <line x1="-5000" y1="0" x2="5000" y2="0" />
-            <line x1="0" y1="-5000" x2="0" y2="5000" />
-          </g>
-
           {/* Transformation Matrix Group */}
           <g id="transform-group" transform={`translate(${tx}, ${ty}) scale(${zoom})`}>
+            
+            {/* Massive Infinite Grid Background inside transform-group */}
+            <rect x="-20000" y="-20000" width="40000" height="40000" fill="url(#grid-pattern-50)" />
+            
+            {/* Coordinate Axes inside transform-group */}
+            <g stroke="var(--axis-color)" strokeWidth="0.8">
+              <line x1="-20000" y1="0" x2="20000" y2="0" />
+              <line x1="0" y1="-20000" x2="0" y2="20000" />
+            </g>
             
             {/* 1. Guides and Levels */}
             {showGuides && (
@@ -1201,8 +1268,16 @@ export default function Home() {
       {/* FULL GRID SPREADSHEET MATRIX OVERLAY PANEL */}
       <div className={`table-overlay-panel tech-ui-layer fixed inset-0 w-full h-full z-20 flex flex-col p-8 overflow-y-auto transition-all duration-300 ${showTable ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`} style={{ backgroundColor: "var(--bg-base)" }}>
         <div className="table-header-row flex items-center justify-between mb-4">
-          <div className="table-title-group">
-            <h2 className="text-xl font-bold text-[var(--text-primary)]">Cuadro de Tallas Automático (Graduación Escalar)</h2>
+          <div className="table-title-group flex-1">
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-bold text-[var(--text-primary)]">Cuadro de Tallas Automático (Graduación Escalar)</h2>
+              <button 
+                onClick={() => setUserBase({ ...BASE_PRESETS })}
+                className={`px-3 py-1 bg-[var(--bg-card)] border border-[var(--border-light)] rounded-md text-xs font-bold transition-all shadow-sm ${lightMode ? "hover:bg-zinc-200 text-sky-800" : "hover:bg-white/10 text-cyan-400"}`}
+              >
+                Restablecer Talla 10 Base
+              </button>
+            </div>
             <p className="text-xs text-zinc-500 mt-1">Haz click en cualquier celda para editar el valor de la talla. Todos los deltas y el SVG se recalculan al instante.</p>
           </div>
           <button 
@@ -1223,7 +1298,7 @@ export default function Home() {
                   <th 
                     key={size} 
                     className={`p-3 text-[10px] font-bold uppercase tracking-wider text-center ${
-                      size === "10" ? "text-cyan-400 bg-[var(--brand-primary)]/5" : "text-zinc-500"
+                      size === "10" ? (lightMode ? "text-sky-700 bg-sky-50" : "text-cyan-400 bg-[var(--brand-primary)]/5") : "text-zinc-500"
                     }`}
                   >
                     Talla {size} {size === "10" && "(BASE)"}
@@ -1240,8 +1315,8 @@ export default function Home() {
                 const getVal = (idx: number) => userBase[id] + deltaArr[idx];
 
                 return (
-                  <tr key={id} className="border-b border-[var(--border-light)] hover:bg-white/2">
-                    <td className="p-3 font-mono font-bold text-sky-400 text-xs">{id.toUpperCase()}</td>
+                  <tr key={id} className={`border-b border-[var(--border-light)] transition-colors ${lightMode ? "hover:bg-black/[0.02]" : "hover:bg-white/[0.02]"}`}>
+                    <td className={`p-3 font-mono font-bold text-xs ${lightMode ? "text-sky-700" : "text-sky-400"}`}>{id.toUpperCase()}</td>
                     <td className="p-3 text-xs text-[var(--text-primary)] font-medium">{desc}</td>
                     {nestedSizings.map((size, idx) => {
                       const val = getVal(idx);
@@ -1250,7 +1325,7 @@ export default function Home() {
                       return (
                         <td 
                           key={size} 
-                          className={`p-1.5 text-center ${isBase ? "bg-cyan-500/5" : ""}`}
+                          className={`p-1.5 text-center ${isBase ? (lightMode ? "bg-sky-50" : "bg-cyan-500/5") : ""}`}
                         >
                           <input 
                             type="number" 
@@ -1265,7 +1340,7 @@ export default function Home() {
                               }
                             }}
                             className={`w-20 bg-transparent border border-transparent hover:border-[var(--border-light)] focus:bg-[var(--bg-base)] focus:border-[var(--brand-primary)] text-center text-xs font-mono py-1 rounded focus:outline-none transition-colors ${
-                              isBase ? "text-cyan-400 font-bold" : "text-[var(--text-secondary)]"
+                              isBase ? (lightMode ? "text-sky-700 font-bold" : "text-cyan-400 font-bold") : "text-[var(--text-secondary)]"
                             }`}
                           />
                         </td>
