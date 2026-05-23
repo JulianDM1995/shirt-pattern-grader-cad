@@ -66,6 +66,15 @@
             --grid-major: rgba(0, 0, 0, 0.08);
             --grid-minor: rgba(0, 0, 0, 0.03);
             --axis-color: rgba(0, 0, 0, 0.06);
+
+            /* High-contrast sizing colors for Day Mode artboard */
+            --color-6: #dc2626;  /* High-contrast Red */
+            --color-8: #ea580c;  /* High-contrast Orange */
+            --color-10: #0284c7; /* High-contrast Sky Blue / Cyan */
+            --color-12: #059669; /* High-contrast Green */
+            --color-14: #7c3aed; /* High-contrast Purple */
+            --color-16: #9333ea; /* High-contrast Violet */
+            --color-18: #db2777; /* High-contrast Pink */
         }
 
         * {
@@ -252,7 +261,7 @@
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 4px;
-            background: #121214;
+            background: var(--bg-base);
             padding: 3px;
             border-radius: 4px;
             border: 1px solid var(--border-light);
@@ -484,7 +493,7 @@
         /* View tabs in toolbar */
         .view-mode-tabs {
             display: flex;
-            background: #121214;
+            background: var(--bg-base);
             padding: 2px;
             border-radius: 4px;
             border: 1px solid var(--border-light);
@@ -503,7 +512,7 @@
         }
 
         .tab-btn.active {
-            color: #fff;
+            color: var(--text-primary);
             background: var(--bg-card);
             border: 1px solid var(--border-light);
         }
@@ -719,7 +728,7 @@
         }
         body.light-mode .size-btn.active.size-10 {
             color: #ffffff;
-            background: var(--brand-accent);
+            background: var(--color-10);
         }
         body.light-mode .size-btn.active {
             color: #ffffff;
